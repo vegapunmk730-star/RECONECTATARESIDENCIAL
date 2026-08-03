@@ -1,12 +1,3 @@
-// ═══════════════════════════════════════════════════════════════════
-// RECONECTA RESIDENCIAL — Google Apps Script COMPLETO v6.0
-// Colar TODO este conteúdo no editor e re-publicar como nova versão
-// Acesso: Qualquer pessoa (mesmo anónima)
-//
-// TRIGGERS A CONFIGURAR (Gatilhos → Adicionar gatilho):
-//   • autoCancelarPendentes   → Accionado por tempo → A cada hora
-//   • arquivarReservasExpiradas → Accionado por tempo → A cada hora
-// ═══════════════════════════════════════════════════════════════════
 
 const SHEET_NAME   = 'Reservas';
 const ARCHIVE_NAME = 'Arquivo';
