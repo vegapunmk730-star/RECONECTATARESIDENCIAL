@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /owner730.html
+
+Sitemap: https://reconectaresidencial.com/sitemap.xml
