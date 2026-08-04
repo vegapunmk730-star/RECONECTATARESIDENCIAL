@@ -1,449 +1,452 @@
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reconecta Residencial — Hotel em N'dalatando, Angola | Quartos, Piscina & Restaurante</title>
-<meta name="description" content="Reconecta Residencial — O melhor hotel em N'dalatando, Cuanza Norte, Angola. Quartos climatizados com pequeno-almoço incluído, piscina com iluminação nocturna, restaurante e bar. Reserve já online!">
-<meta name="keywords" content="hotel N'dalatando, residencial N'dalatando, quartos N'dalatando, hotel Cuanza Norte, hotel Angola, piscina N'dalatando, restaurante N'dalatando, reserva hotel Angola, Reconecta Residencial, Vila Verde N'dalatando">
-<meta name="author" content="Reconecta Residencial">
-<meta name="theme-color" content="#5C3D2E">
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-<link rel="canonical" href="https://reconectaresidencial.com">
+const SHEET_NAME   = 'Reservas';
+const ARCHIVE_NAME = 'Arquivo';
 
-<!-- Open Graph / Facebook / WhatsApp -->
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://reconectaresidencial.com">
-<meta property="og:title" content="Reconecta Residencial — Hotel em N'dalatando, Angola">
-<meta property="og:description" content="O melhor hotel em N'dalatando. Quartos climatizados, piscina, restaurante e bar. Pequeno-almoço incluído. Reserve agora online!">
-<meta property="og:image" content="https://reconectaresidencial.com/fotos/estabelecimento3.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:locale" content="pt_AO">
-<meta property="og:site_name" content="Reconecta Residencial">
-
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Reconecta Residencial — Hotel em N'dalatando, Angola">
-<meta name="twitter:description" content="O melhor hotel em N'dalatando. Quartos, piscina, restaurante e bar. Reserve online!">
-<meta name="twitter:image" content="https://reconectaresidencial.com/fotos/estabelecimento3.jpg">
-
-<!-- Schema.org JSON-LD — Hotel + LocalBusiness -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": ["Hotel", "LodgingBusiness"],
-  "name": "Reconecta Residencial",
-  "description": "Hotel com quartos climatizados, piscina com iluminação nocturna, restaurante e bar em N'dalatando, Cuanza Norte, Angola. Pequeno-almoço incluído para todos os hóspedes.",
-  "url": "https://reconectaresidencial.com",
-  "telephone": "+244939798979",
-  "email": "Reconecta.Residencial@gmail.com",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "Vila Verde, Entrada de N'dalatando",
-    "addressLocality": "N'dalatando",
-    "addressRegion": "Cuanza Norte",
-    "addressCountry": "AO"
-  },
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": -9.2978,
-    "longitude": 14.9116
-  },
-  "image": [
-    "https://reconectaresidencial.com/fotos/estabelecimento3.jpg",
-    "https://reconectaresidencial.com/fotos/piscina1.jpg",
-    "https://reconectaresidencial.com/fotos/quarto 35 mil.jpg"
-  ],
-  "priceRange": "20000 AOA - 35000 AOA por noite",
-  "currenciesAccepted": "AOA",
-  "openingHours": "Mo-Su 00:00-24:00",
-  "amenityFeature": [
-    {"@type": "LocationFeatureSpecification", "name": "Piscina", "value": true},
-    {"@type": "LocationFeatureSpecification", "name": "Wi-Fi gratuito", "value": true},
-    {"@type": "LocationFeatureSpecification", "name": "Ar condicionado", "value": true},
-    {"@type": "LocationFeatureSpecification", "name": "Restaurante", "value": true},
-    {"@type": "LocationFeatureSpecification", "name": "Bar", "value": true},
-    {"@type": "LocationFeatureSpecification", "name": "Pequeno-almoço incluído", "value": true},
-    {"@type": "LocationFeatureSpecification", "name": "Estacionamento", "value": true},
-    {"@type": "LocationFeatureSpecification", "name": "Serviço de quarto 24h", "value": true}
-  ],
-  "hasMap": "https://maps.app.goo.gl/11UD7gtXf7C4rV6e6",
-  "sameAs": [
-    "https://www.instagram.com/reconecta.residencial",
-    "https://www.facebook.com/profile.php?id=61580712549481"
-  ]
+// ── CORS — cabeçalhos para todas as respostas ───────────────────────
+function criarResposta(dados) {
+  return ContentService
+    .createTextOutput(JSON.stringify(dados))
+    .setMimeType(ContentService.MimeType.JSON);
 }
-</script>
 
-<link rel="icon" type="image/jpeg" href="fotos/logo.jpg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
+// ── Gerar código único da reserva: RR-YYYYMMDD-NNNN ─────────────────
+// Sequencial por dia. Usa LockService para evitar colisões em pedidos simultâneos.
+function gerarCodigoReserva(sheet) {
+  const hoje = new Date();
+  const y = hoje.getFullYear();
+  const m = String(hoje.getMonth() + 1).padStart(2, '0');
+  const d = String(hoje.getDate()).padStart(2, '0');
+  const prefixo = 'RR-' + y + m + d + '-';
 
-<!-- SPLASH -->
-<div id="splash">
-  <div class="splash-inner">
-    <div class="splash-logo"><img src="fotos/logo.jpg" alt="Reconecta Residencial"></div>
-    <div class="splash-name">Reconecta <em>Residencial</em></div>
-    <div class="splash-sub">N'dalatando · Angola</div>
-    <div class="splash-bar"><div class="splash-progress"></div></div>
-  </div>
-</div>
+  let maxN = 0;
+  const lastRow = sheet.getLastRow();
+  if (lastRow > 1) {
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const iCod = headers.indexOf('codigo');
+    if (iCod >= 0) {
+      const codigos = sheet.getRange(2, iCod + 1, lastRow - 1, 1).getValues();
+      codigos.forEach(row => {
+        const c = String(row[0] || '');
+        if (c.indexOf(prefixo) === 0) {
+          const n = parseInt(c.substring(prefixo.length), 10);
+          if (!isNaN(n) && n > maxN) maxN = n;
+        }
+      });
+    }
+  }
+  return prefixo + String(maxN + 1).padStart(4, '0');
+}
 
-<!-- NAV -->
-<nav id="nav">
-  <div class="nav-logo">
-    <img src="fotos/logo.jpg" alt="Reconecta" onerror="this.style.display='none'">
-    <div class="nav-brand">Reconecta Residencial<span>Restaurante · Piscina · Bar</span></div>
-  </div>
-  <ul class="nav-links">
-    <li><a href="#sobre">Sobre</a></li>
-    <li><a href="#quartos">Quartos</a></li>
-    <li><a href="#galeria">Galeria</a></li>
-    <li><a href="#restaurante">Restaurante</a></li>
-    <li><a href="#localizacao">Localização</a></li>
-  </ul>
-  <button class="nav-cta" onclick="openModal()" aria-label="Fazer reserva">Reservar</button>
-  <button class="hamburger" onclick="toggleMob()" aria-label="Menu"><span></span><span></span><span></span></button>
-</nav>
+// ── Obter (ou criar) a aba Arquivo ─────────────────────────────────
+function obterOuCriarAbaArquivo(ss, headers) {
+  let arquivo = ss.getSheetByName(ARCHIVE_NAME);
+  if (!arquivo) {
+    arquivo = ss.insertSheet(ARCHIVE_NAME);
+    // Cabeçalhos = mesmos da aba Reservas + coluna extra data_arquivo
+    const cabArq = headers.concat(['data_arquivo']);
+    arquivo.appendRow(cabArq);
+    const cab = arquivo.getRange(1, 1, 1, cabArq.length);
+    cab.setFontWeight('bold');
+    cab.setBackground('#1a3a2a');
+    cab.setFontColor('#ffffff');
+    arquivo.setFrozenRows(1);
+    Logger.log('Aba Arquivo criada.');
+  }
+  return arquivo;
+}
 
-<!-- MOBILE MENU -->
-<div class="mob-menu" id="mobMenu">
-  <a href="#sobre" onclick="toggleMob()">Sobre</a>
-  <a href="#quartos" onclick="toggleMob()">Quartos</a>
-  <a href="#galeria" onclick="toggleMob()">Galeria</a>
-  <a href="#restaurante" onclick="toggleMob()">Restaurante</a>
-  <a href="#localizacao" onclick="toggleMob()">Localização</a>
-  <button class="mob-cta" onclick="toggleMob();openModal()">Fazer Reserva</button>
-</div>
+// ── GET — devolver reservas ─────────────────────────────────────────
+function doGet(e) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    if (!sheet) return criarResposta({ reservas: [] });
+    const dados = sheet.getDataRange().getValues();
+    if (dados.length <= 1) return criarResposta({ reservas: [] });
+    const headers = dados[0];
+    const reservas = [];
+    for (let i = 1; i < dados.length; i++) {
+      const row = {};
+      headers.forEach((h, j) => {
+        row[h] = dados[i][j] !== undefined && dados[i][j] !== null ? String(dados[i][j]) : '';
+      });
+      reservas.push(row);
+    }
+    return criarResposta({ ok: true, reservas });
+  } catch (err) {
+    return criarResposta({ ok: false, erro: err.message, reservas: [] });
+  }
+}
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-slides">
-    <div class="hero-slide hero-slide-1 active"></div>
-    <div class="hero-slide hero-slide-2"></div>
-    <div class="hero-slide hero-slide-3"></div>
-  </div>
-  <div class="hero-overlay"></div>
-  <div class="hero-body">
-    <div class="hero-pill">N'dalatando · Vila Verde · Angola</div>
-    <h1 class="hero-h1">O conforto<br>começa antes<br><em>da chegada</em></h1>
-    <p class="hero-p">Residencial, piscina e restauração no coração de N'dalatando. Um espaço completo onde cada detalhe foi pensado para o seu bem-estar.</p>
-    <div class="hero-btns">
-      <button class="btn-p" onclick="openModal()">Fazer Reserva</button>
-      <a href="#sobre" class="btn-g">Conhecer o Espaço</a>
-    </div>
-  </div>
-  <div class="hero-dots">
-    <div class="dot active" onclick="goSlide(0)"></div>
-    <div class="dot" onclick="goSlide(1)"></div>
-    <div class="dot" onclick="goSlide(2)"></div>
-  </div>
-  <div class="hero-scroll"><div class="scroll-line"></div><span>Explorar</span></div>
-</section>
+// ── POST — receber acções ───────────────────────────────────────────
+function doPost(e) {
+  try {
+    const payload = JSON.parse(e.postData.contents);
+    if (payload.action === 'login')           return verificarLogin(payload.user, payload.pass);
+    if (payload.action === 'updateStatus')    return actualizarEstado(payload.id, payload.estado);
+    if (payload.action === 'updatePagamento') return actualizarPagamento(payload.id, payload.pagamento_estado, payload.pagamento_valor, payload.pagamento_notas);
+    if (payload.action === 'deleteReserva')   return apagarReserva(payload.id);
+    if (payload.action === 'clearAll')        return apagarTodasReservas();
+    return guardarReserva(payload);
+  } catch (err) {
+    return criarResposta({ ok: false, erro: err.message });
+  }
+}
 
-<!-- STATS BAR -->
-<div class="bar">
-  <div class="bar-item"><div class="bar-n">17</div><div class="bar-l">Quartos disponíveis</div></div>
-  <div class="bar-item"><div class="bar-n">24h</div><div class="bar-l">Serviço de quarto</div></div>
-  <div class="bar-item"><div class="bar-n">3</div><div class="bar-l">Serviços no espaço</div></div>
-  <div class="bar-item"><div class="bar-n">Wi-Fi</div><div class="bar-l">Internet incluída</div></div>
-</div>
+// ── Login do painel administrativo ──────────────────────────────────
+// Utilizador e palavra-passe NÃO estão no código — ficam guardados em
+// "Propriedades do Script" (Editor Apps Script → ⚙️ Definições do projeto →
+// Propriedades do script). Para mudar a palavra-passe, basta editar o valor
+// de ADMIN_PASS ali; não é preciso tocar em código nem voltar a publicar.
+// Se as propriedades ainda não existirem, usam-se os valores por omissão
+// abaixo (recomenda-se defini-las manualmente logo após a primeira publicação).
+function verificarLogin(user, pass) {
+  const props = PropertiesService.getScriptProperties();
+  const adminUser = props.getProperty('ADMIN_USER') || 'Tango';
+  const adminPass = props.getProperty('ADMIN_PASS')  || 'reconecta2025';
+  if (String(user || '').trim() === adminUser && String(pass || '') === adminPass) {
+    return criarResposta({ ok: true });
+  }
+  return criarResposta({ ok: false, erro: 'Utilizador ou palavra-passe incorrectos.' });
+}
 
-<!-- SOBRE -->
-<section class="s sobre" id="sobre">
-  <div class="sobre-g">
-    <div class="img-stack rev rev-l">
-      <img class="img-main" src="fotos/piscina1.jpg" alt="Reconecta Residencial">
-      <img class="img-acc" src="fotos/estabelecimento.jpg" alt="Estabelecimento">
-    </div>
-    <div class="rev rev-r">
-      <div class="sh" style="margin-bottom:20px">
-        <span class="tag">Sobre o Espaço</span>
-        <h2 class="h2">Um residencial para <em>reconectar</em></h2>
-        <p class="desc">O Reconecta Residencial está situado na entrada de N'dalatando, na Vila Verde. Criado para oferecer ao viajante angolano e internacional um alojamento completo, confortável e acolhedor.</p>
-      </div>
-      <ul class="sobre-list">
-        <li>17 suítes climatizadas com água fria e quente e televisão</li>
-        <li>Sistema de música bluetooth em todos os quartos</li>
-        <li>Pequeno-almoço incluído para todos os hóspedes</li>
-        <li>Piscina com iluminação nocturna</li>
-        <li>Restaurante com cozinha angolana e internacional</li>
-        <li>Bar junto à piscina aberto todos os dias</li>
-        <li>Wi-Fi gratuito em todo o espaço</li>
-        <li>Estacionamento privado no estabelecimento</li>
-      </ul>
-      <div style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap">
-        <button class="btn-p" onclick="openModal()" style="font-size:.68rem;padding:11px 22px">Reservar agora</button>
-        <button class="btn-maps" onclick="abrirMaps()">
-          <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
-          Ver no mapa
-        </button>
-      </div>
-    </div>
-  </div>
-</section>
+// ── Auxiliar — definir/alterar utilizador e palavra-passe por código ────
+// Executar manualmente no editor (▶ Executar) sempre que quiseres mudar as
+// credenciais a partir daqui em vez do painel de Propriedades do Script.
+function definirCredenciaisAdmin() {
+  const NOVO_USER = 'Tango';           // ← muda aqui
+  const NOVA_PASS = 'reconecta2025';   // ← muda aqui
+  PropertiesService.getScriptProperties().setProperties({
+    ADMIN_USER: NOVO_USER,
+    ADMIN_PASS: NOVA_PASS
+  });
+  Logger.log('Credenciais do admin actualizadas.');
+}
 
-<!-- SERVIÇOS -->
-<section class="s servicos" id="servicos">
-  <div class="sh rev"><span class="tag">O que Oferecemos</span><h2 class="h2">Tudo num <em>só lugar</em></h2></div>
-  <div class="srv-g rev">
-    <div class="srv"><div class="srv-n">01</div><div class="srv-t">Alojamento</div><p class="srv-d">17 quartos equipados com ar condicionado, água fria e quente, televisão e música bluetooth. Disponível por noite ou diária completa.</p></div>
-    <div class="srv"><div class="srv-n">02</div><div class="srv-t">Piscina</div><p class="srv-d">Piscina ampla com iluminação especial ao anoitecer. Acesso incluído para hóspedes (exceto Quarto Standard).</p></div>
-    <div class="srv"><div class="srv-n">03</div><div class="srv-t">Restaurante</div><p class="srv-d">Cozinha angolana e internacional. Pequeno-almoço incluído. Aberto ao público — serviço de quarto 24h.</p></div>
-    <div class="srv"><div class="srv-n">04</div><div class="srv-t">Bar</div><p class="srv-d">Bar junto à piscina com bebidas nacionais e internacionais. Aberto todos os dias.</p></div>
-  </div>
-</section>
+// ── Guardar nova reserva ────────────────────────────────────────────
+function guardarReserva(dados) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
 
-<!-- QUARTOS -->
-<section class="s quartos" id="quartos">
-  <div class="sh rev">
-    <span class="tag">Alojamento</span>
-    <h2 class="h2">17 quartos prontos para <em>recebê-lo</em></h2>
-    <p class="desc">Escolha o quarto ideal. Todos incluem pequeno-almoço. Os quartos Superior, Confort e Deluxe têm acesso à piscina.</p>
-  </div>
-  <div class="q-g rev" id="quartosGrid"><div class="q-loading"><div class="q-spinner"></div>A verificar disponibilidade...</div></div>
-</section>
+  if (!dados.nome || String(dados.nome).trim().length < 2) {
+    return criarResposta({ ok: false, erro: 'Nome obrigatório.' });
+  }
+  if (!dados.telefone && !dados.email) {
+    return criarResposta({ ok: false, erro: 'Telefone ou email obrigatório.' });
+  }
 
-<!-- GALERIA -->
-<section class="s galeria" id="galeria" style="padding-bottom:0">
-  <div class="sh rev"><span class="tag">Galeria</span><h2 class="h2">O espaço em <em>imagens</em></h2></div>
-  <div class="rev" style="margin-top:28px">
-    <div class="gal-tabs">
-      <button class="gal-tab active" onclick="switchTab('piscina',this)">🏊 Piscina</button>
-      <button class="gal-tab" onclick="switchTab('bar',this)">🍹 Bar</button>
-      <button class="gal-tab" onclick="switchTab('comida',this)">🍽️ Restaurante</button>
-      <button class="gal-tab" onclick="switchTab('espaco',this)">🏨 Espaço</button>
-      <button class="gal-tab" onclick="switchTab('qts',this)">🛏️ Quartos</button>
-    </div>
+  // LOCK — protege a geração do código sequencial e a escrita da linha
+  // contra pedidos simultâneos (dois clientes a reservar ao mesmo tempo).
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    // Criar cabeçalhos se folha vazia
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(['id','codigo','nome','email','telefone','tipo','checkin','checkout',
+                       'pessoas','quartos','observacoes','data_submissao','estado',
+                       'pagamento_estado','pagamento_valor','pagamento_notas']);
+      const cab = sheet.getRange(1,1,1,16);
+      cab.setFontWeight('bold');
+      cab.setBackground('#2b2b2b');
+      cab.setFontColor('#ffffff');
+      sheet.setFrozenRows(1);
+    }
 
-    <div class="gal-panel active" id="gal-piscina">
-      <div class="gal-g">
-        <div class="gal-item wide"><img src="fotos/piscina1.jpg" alt="Piscina" loading="lazy"><div class="gal-overlay"><div class="gal-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div class="gal-label">Piscina</div></div></div>
-        <div class="gal-item"><img src="fotos/piscina2.jpg" alt="Vista da piscina" loading="lazy"><div class="gal-overlay"><div class="gal-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div class="gal-label">Vista da piscina</div></div></div>
-      </div>
-    </div>
+    const headers = sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0];
+    // BUG 3 FIX: O ID anterior usava getLastRow() antes de appendRow(), causando IDs
+    // duplicados em pedidos simultâneos. Agora usa timestamp de milissegundos + sufixo
+    // aleatório de 3 dígitos, tornando colisões praticamente impossíveis.
+    const tsId = new Date().getFullYear() + '-' + Date.now() + '-' + String(Math.floor(Math.random() * 1000)).padStart(3,'0');
+    const id = 'RES-' + tsId;
+    // Código único, legível para o cliente: RR-YYYYMMDD-NNNN (sequencial diário)
+    const codigo = gerarCodigoReserva(sheet);
 
-    <div class="gal-panel" id="gal-bar">
-      <div class="gal-g">
-        <div class="gal-item wide"><img src="fotos/bar1.jpg" alt="Bar" loading="lazy"><div class="gal-overlay"><div class="gal-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div class="gal-label">Bar</div></div></div>
-        <div class="gal-item"><img src="fotos/bar2.jpg" alt="Bar junto à piscina" loading="lazy"><div class="gal-overlay"><div class="gal-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div class="gal-label">Bar junto à piscina</div></div></div>
-      </div>
-    </div>
+    const linha = headers.map(h => {
+      if (h === 'id')               return id;
+      if (h === 'codigo')           return codigo;
+      if (h === 'estado')           return dados.estado || 'Pendente';
+      if (h === 'data_submissao')   return dados.data_submissao || new Date().toLocaleString('pt-PT');
+      if (h === 'pagamento_estado') return dados.pagamento_estado || 'Não pago';
+      if (h === 'pagamento_valor')  return dados.pagamento_valor  || '0';
+      if (h === 'pagamento_notas')  return dados.pagamento_notas  || '—';
+      return dados[h] !== undefined ? dados[h] : '—';
+    });
 
-    <div class="gal-panel" id="gal-comida">
-      <div class="gal-g">
-        <div class="gal-item wide"><img src="fotos/comida1.jpg" alt="Gastronomia" loading="lazy"><div class="gal-overlay"><div class="gal-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div class="gal-label">Gastronomia</div></div></div>
-        <div class="gal-item"><img src="fotos/comida2.jpg" alt="Pratos" loading="lazy"><div class="gal-overlay"><div class="gal-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div class="gal-label">Pratos</div></div></div>
-        <div class="gal-item"><img src="fotos/comida3.jpg" alt="Cozinha angolana" loading="lazy"><div class="gal-overlay"><div class="gal-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div class="gal-label">Cozinha angolana</div></div></div>
-        <div class="gal-item"><img src="fotos/comida4.jpg" alt="Especialidades" loading="lazy"><div class="gal-overlay"><div class="gal-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div class="gal-label">Especialidades</div></div></div>
-      </div>
-    </div>
+    sheet.appendRow(linha);
+    Logger.log('Nova reserva: ' + id + ' (' + codigo + ')');
+    return criarResposta({ ok: true, id, codigo });
+  } finally {
+    lock.releaseLock();
+  }
+}
 
-    <div class="gal-panel" id="gal-espaco">
-      <div class="gal-g">
-        <div class="gal-item wide"><img src="fotos/estabelecimento3.jpg" alt="Vista exterior" loading="lazy"><div class="gal-overlay"><div class="gal-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div class="gal-label">Vista exterior</div></div></div>
-        <div class="gal-item"><img src="fotos/estabelecimento.jpg" alt="Estabelecimento" loading="lazy"><div class="gal-overlay"><div class="gal-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div class="gal-label">Estabelecimento</div></div></div>
-        <div class="gal-item"><img src="fotos/estabelecimento (1).jpg" alt="Entrada" loading="lazy"><div class="gal-overlay"><div class="gal-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div class="gal-label">Entrada</div></div></div>
-      </div>
-    </div>
+// ── Apagar reserva individual ───────────────────────────────────────
+function apagarReserva(id) {
+  if (!id) return criarResposta({ ok: false, erro: 'ID em falta.' });
 
-    <div class="gal-panel" id="gal-qts">
-      <div class="gal-g">
-        <div class="gal-item"><img src="fotos/quarto 20mil.jpg" alt="Quarto Standard" loading="lazy"><div class="gal-overlay"><div class="gal-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div class="gal-label">Quarto Standard</div></div></div>
-        <div class="gal-item"><img src="fotos/quarto 25 mil.jpg" alt="Quarto Superior" loading="lazy"><div class="gal-overlay"><div class="gal-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div class="gal-label">Quarto Superior</div></div></div>
-        <div class="gal-item"><img src="fotos/quarto 30 mil.jpg" alt="Quarto Confort" loading="lazy"><div class="gal-overlay"><div class="gal-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div class="gal-label">Quarto Confort</div></div></div>
-        <div class="gal-item"><img src="fotos/quarto 35 mil.jpg" alt="Quarto Deluxe" loading="lazy"><div class="gal-overlay"><div class="gal-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div class="gal-label">Quarto Deluxe</div></div></div>
-      </div>
-    </div>
-  </div>
-</section>
+  const sheet   = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet)   return criarResposta({ ok: false, erro: 'Folha não encontrada.' });
 
-<!-- PISCINA -->
-<div class="piscina" id="piscina">
-  <div class="pis-img"><img src="fotos/piscina1.jpg" alt="Piscina Reconecta Residencial"></div>
-  <div class="pis-body rev">
-    <span class="tag">Área de Lazer</span>
-    <h2 class="h2">Uma piscina que <em>impressiona</em></h2>
-    <p class="desc">Com iluminação especial ao anoitecer, a nossa piscina é o espaço ideal para relaxar após um dia longo ou conviver em família.</p>
-    <div class="pis-feats">
-      <div class="pis-f"><strong>Iluminação nocturna</strong>Disponível todas as noites</div>
-      <div class="pis-f"><strong>Acesso incluído</strong>Para hóspedes (exceto Standard)</div>
-      <div class="pis-f"><strong>Visitantes externos</strong>Acesso mediante pagamento</div>
-      <div class="pis-f"><strong>Bar junto à piscina</strong>Aberto todos os dias</div>
-    </div>
-    <button class="btn-p" onclick="openModal();setTimeout(()=>{document.getElementById('ftp').value='Acesso à Piscina';onTipoChange();},60)" style="margin-top:8px;align-self:flex-start">Reservar e incluir piscina</button>
-  </div>
-</div>
+  const dados   = sheet.getDataRange().getValues();
+  if (dados.length <= 1) return criarResposta({ ok: false, erro: 'Folha vazia.' });
 
-<!-- RESTAURANTE -->
-<section class="s rb" id="restaurante">
-  <div class="rb-g">
-    <div class="rb-imgs rev rev-l">
-      <div class="ri"><img src="fotos/comida1.jpg" alt="Gastronomia Reconecta" loading="lazy"></div>
-      <div class="ri"><img src="fotos/comida2.jpg" alt="Pratos Reconecta" loading="lazy"></div>
-      <div class="ri"><img src="fotos/bar1.jpg" alt="Bar Reconecta" loading="lazy"></div>
-      <div class="ri"><img src="fotos/comida4.jpg" alt="Gastronomia" loading="lazy"></div>
-    </div>
-    <div class="rev rev-r">
-      <div class="sh" style="margin-bottom:12px">
-        <span class="tag">Restaurante & Bar</span>
-        <h2 class="h2">Sabores que <em>reconfortam</em></h2>
-        <p class="desc">Gastronomia com quitutes da terra e não só. Aberto a hóspedes e ao público para almoço e jantar.</p>
-      </div>
-      <button class="menu-toggle-btn" id="menuToggle" onclick="toggleMenu()" aria-expanded="false" aria-controls="menuS">
-        <svg viewBox="0 0 24 24" style="width:14px;fill:currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
-        Ver serviços disponíveis
-        <svg class="chevron" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-      </button>
-      <div class="menu-s" id="menuS">
-        <div class="menu-inner">
-          <div class="menu-lb">Serviços disponíveis</div>
-          <div class="menu-row"><span>Pequeno-almoço</span><span class="menu-b" style="color:var(--verde)">Incluído para hóspedes</span></div>
-          <div class="menu-row"><span>Almoço</span><span class="menu-b">Aberto ao público</span></div>
-          <div class="menu-row"><span>Jantar</span><span class="menu-b">Aberto ao público</span></div>
-          <div class="menu-row"><span>Serviço de quarto</span><span class="menu-b">24 horas</span></div>
-        </div>
-      </div>
-      <div style="margin-top:20px">
-        <button class="btn-p" onclick="openModal()" style="font-size:.68rem;padding:11px 22px">Reservar mesa / quarto</button>
-      </div>
-    </div>
-  </div>
-</section>
+  const headers = dados[0];
+  const iId     = headers.indexOf('id');
 
-<!-- LOCALIZAÇÃO -->
-<section class="s loc" id="localizacao">
-  <div class="loc-g">
-    <div class="rev">
-      <div class="sh" style="margin-bottom:0">
-        <span class="tag">Onde Estamos</span>
-        <h2 class="h2">Entrada de <em>N'dalatando</em></h2>
-        <p class="desc">Localizados estrategicamente na Vila Verde, à entrada de N'dalatando — a primeira e melhor referência de alojamento para quem chega à cidade.</p>
-      </div>
-      <div class="loc-list">
-        <div class="loc-i"><div class="loc-dot"></div><div><div class="loc-lb">Morada</div><div class="loc-v">Vila Verde, Entrada de N'dalatando<br>Cuanza Norte, Angola</div></div></div>
-        <div class="loc-i"><div class="loc-dot"></div><div><div class="loc-lb">Telefone / WhatsApp</div><div class="loc-v"><a href="tel:+244939798979">+244 939 798 979</a></div></div></div>
-        <div class="loc-i"><div class="loc-dot"></div><div><div class="loc-lb">Email</div><div class="loc-v"><a href="mailto:Reconecta.Residencial@gmail.com">Reconecta.Residencial@gmail.com</a></div></div></div>
-        <div class="loc-i"><div class="loc-dot"></div><div><div class="loc-lb">Instagram</div><div class="loc-v"><a href="https://www.instagram.com/reconecta.residencial" target="_blank" rel="noopener noreferrer">@reconecta.residencial</a></div></div></div>
-        <div class="loc-i"><div class="loc-dot"></div><div><div class="loc-lb">Horário</div><div class="loc-v">Aberto todos os dias — 24 horas</div></div></div>
-      </div>
-    </div>
-    <div class="rev">
-      <div style="position:relative;width:100%;aspect-ratio:4/3">
-        <iframe style="width:100%;height:100%;position:absolute;inset:0;border:none;border-radius:12px" src="https://maps.google.com/maps?q=-9.2978,14.9116&output=embed&z=17" allowfullscreen loading="lazy" title="Localização Reconecta Residencial"></iframe>
-      </div>
-      <button class="btn-maps" onclick="abrirMaps()" style="margin-top:12px">
-        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
-        Abrir no Google Maps
-      </button>
-    </div>
-  </div>
-</section>
+  if (iId < 0) return criarResposta({ ok: false, erro: 'Coluna id não encontrada.' });
 
-<!-- WA BANNER -->
-<a href="https://wa.me/244939798979?text=Ol%C3%A1!%20Gostaria%20de%20fazer%20uma%20reserva%20no%20Reconecta%20Residencial." class="wa" target="_blank" rel="noopener noreferrer">
-  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-  Reservar pelo WhatsApp — +244 939 798 979
-</a>
+  const idProcurar = String(id).trim();
 
-<!-- FOOTER -->
-<footer>
-  <div class="f-logo">
-    <img src="fotos/logo.jpg" alt="Reconecta" onerror="this.style.display='none'">
-    <div class="f-logo-text">Reconecta <em>Residencial</em></div>
-  </div>
-  <div class="f-center">
-    <p>Vila Verde, N'dalatando · Cuanza Norte · Angola</p>
-    <p style="margin-top:4px"><a href="tel:+244939798979">+244 939 798 979</a> &middot; <a href="mailto:Reconecta.Residencial@gmail.com">Reconecta.Residencial@gmail.com</a></p>
-    <p style="margin-top:6px;font-size:.6rem;opacity:.5">&copy; <span id="fyear"></span> Reconecta Residencial. Todos os direitos reservados.</p>
-  </div>
-  <div class="f-soc">
-    <a href="https://www.instagram.com/reconecta.residencial" class="f-s" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>
-    <a href="https://www.facebook.com/profile.php?id=61580712549481" class="f-s" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
-    <a href="https://wa.me/244939798979" class="f-s" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
-  </div>
-</footer>
+  // Percorrer de baixo para cima — evita saltar linhas durante a eliminação
+  for (let i = dados.length - 1; i >= 1; i--) {
+    const idLinha = String(dados[i][iId] || '').trim();
+    if (idLinha === idProcurar) {
+      sheet.deleteRow(i + 1);
+      Logger.log('Apagada reserva: ' + idProcurar + ' (linha ' + (i+1) + ')');
+      return criarResposta({ ok: true, apagada: idProcurar });
+    }
+  }
 
-<!-- LIGHTBOX -->
-<div id="lightbox" role="dialog" aria-modal="true" aria-label="Imagem ampliada" onclick="if(event.target===this)closeLightbox()">
-  <button class="lb-close" onclick="closeLightbox()" aria-label="Fechar">&#215;</button>
-  <button class="lb-prev" onclick="lbMove(-1)" aria-label="Anterior">&#8249;</button>
-  <img id="lbImg" src="" alt="">
-  <button class="lb-next" onclick="lbMove(1)" aria-label="Seguinte">&#8250;</button>
-  <div class="lb-caption" id="lbCaption"></div>
-</div>
+  Logger.log('Reserva não encontrada: ' + idProcurar);
+  return criarResposta({ ok: false, erro: 'Reserva não encontrada: ' + idProcurar });
+}
 
-<!-- MODAL RESERVA -->
-<div class="modal-res-overlay" id="modalRes" role="dialog" aria-modal="true" aria-labelledby="modalResTitle" onclick="if(event.target===this)closeModal()">
-  <div class="modal-res">
-    <div class="modal-res-head">
-      <div><h3 id="modalResTitle">Pedido de Reserva</h3><p>Reconecta Residencial · N'dalatando</p></div>
-      <button class="modal-close-btn" onclick="closeModal()" aria-label="Fechar">&#215;</button>
-    </div>
-    <div class="modal-res-body">
-      <div id="formWrap">
-        <span class="form-hint-modal" id="formHint">Preencha os dados abaixo. Respondemos em menos de 2 horas.</span>
-        <div class="fg">
-          <div class="fi"><label>Nome completo</label><input type="text" id="fn" placeholder="O seu nome" autocomplete="name" aria-label="Nome completo"></div>
-          <div class="fi"><label>Telefone</label><input type="tel" id="ft" placeholder="+244 000 000 000" autocomplete="tel" aria-label="Número de telefone"></div>
-          <div class="fi full"><label>Email</label><input type="email" id="fe" placeholder="email@exemplo.com" autocomplete="email" aria-label="Endereço de email"></div>
-          <div class="fi full"><label>Tipo de reserva</label>
-            <select id="ftp" onchange="onTipoChange()" aria-label="Tipo de reserva">
-              <option value="">Seleccionar...</option>
-              <option value="Quarto Standard">Quarto Standard (2 disponíveis)</option>
-              <option value="Quarto Superior">Quarto Superior (10 disponíveis)</option>
-              <option value="Quarto Confort">Quarto Confort (3 disponíveis)</option>
-              <option value="Quarto Deluxe">Quarto Deluxe (2 disponíveis)</option>
-              <option value="Acesso à Piscina">Apenas Piscina</option>
-              <option value="Reserva no Restaurante">Reserva no Restaurante</option>
-              <option value="Evento / Grupo">Evento / Grupo</option>
-            </select>
-          </div>
-          <div class="fi" id="ciWrap"><label>Data de entrada</label><input type="date" id="fci"></div>
-          <div class="fi" id="coWrap"><label>Data de saída</label><input type="date" id="fco"></div>
-          <div class="fi"><label>N.º de pessoas</label>
-            <select id="fpe"><option>1 pessoa</option><option selected>2 pessoas</option><option>3 pessoas</option><option>4 pessoas</option><option>5 pessoas</option><option>6 ou mais</option></select>
-          </div>
-          <div class="fi" id="qWrap"><label>N.º de quartos</label>
-            <select id="fq"><option selected>1 quarto</option><option>2 quartos</option><option>3 ou mais</option></select>
-          </div>
-          <div class="fi full"><label>Observações</label><textarea id="fo" placeholder="Pedidos especiais ou informações adicionais..."></textarea></div>
-        </div>
-        <button class="f-sub" id="fBtn" onclick="submitForm()">Enviar Pedido de Reserva</button>
-        <div class="f-err" id="fErr"></div>
-        <p class="f-note">Os seus dados são usados exclusivamente para a gestão da sua reserva.</p>
-      </div>
-      <div class="f-ok" id="fOk">
-        <div class="ck">&#10003;</div>
-        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;margin-bottom:10px;color:var(--texto)">Pedido Recebido!</h3>
-        <p style="font-size:.83rem;color:var(--texto-s);line-height:1.75">O seu pedido foi registado com sucesso.<br>Entraremos em contacto em breve para confirmação.</p>
-        <div class="countdown-box">
-          <div class="countdown-label">Tempo para confirmar a reserva</div>
-          <div id="countdown">03:00:00</div>
-          <p style="font-size:.7rem;color:var(--texto-l);margin-top:8px;text-align:center;line-height:1.5">A sua reserva fica garantida durante <strong>3 horas</strong>.<br>Confirme pelo WhatsApp para garantir o seu quarto.</p>
-        </div>
-        <div class="cond-box">
-          <strong style="display:block;margin-bottom:4px">&#128203; Condições da estadia</strong>
-          &#9749; Pequeno-almoço incluído para todos os hóspedes<br>
-          &#127944; Piscina incluída (exceto Quarto Standard)<br>
-          &#128145; Casais: apenas 1 pessoa tem acesso à piscina
-        </div>
-        <div class="pay-box">
-          <strong style="display:block;margin-bottom:4px">&#128178; Pagamento</strong>
-          O pagamento é efectuado <strong>presencialmente no estabelecimento</strong> no momento do check-in.<br>
-          Para combinar outro método, contacte-nos pelo <a href="https://wa.me/244939798979" target="_blank" rel="noopener noreferrer">WhatsApp</a>.
-        </div>
-        <a href="https://wa.me/244939798979" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:14px;background:var(--castanho);color:var(--creme);padding:12px 28px;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;font-weight:600;text-decoration:none;font-family:'Outfit',sans-serif;border-radius:8px">Confirmar via WhatsApp</a>
-      </div>
-    </div>
-  </div>
-</div>
+// ── Apagar TODAS as reservas (manter cabeçalhos) ────────────────────
+function apagarTodasReservas() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) return criarResposta({ ok: false, erro: 'Folha não encontrada.' });
 
-<script src="main.js"></script>
-</body>
-</html>
+  const total = sheet.getLastRow();
+  if (total <= 1) return criarResposta({ ok: true, apagadas: 0 });
+
+  sheet.deleteRows(2, total - 1);
+  Logger.log('clearAll: ' + (total - 1) + ' reservas apagadas.');
+  return criarResposta({ ok: true, apagadas: total - 1 });
+}
+
+// ── Actualizar pagamento ────────────────────────────────────────────
+function actualizarPagamento(id, pagEstado, pagValor, pagNotas) {
+  if (!id) return criarResposta({ ok: false, erro: 'ID em falta.' });
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) return criarResposta({ ok: false, erro: 'Folha não encontrada.' });
+  const dados = sheet.getDataRange().getValues();
+  const headers = dados[0];
+  const iId    = headers.indexOf('id');
+  const iPagE  = headers.indexOf('pagamento_estado');
+  const iPagV  = headers.indexOf('pagamento_valor');
+  const iPagN  = headers.indexOf('pagamento_notas');
+  if (iId < 0) return criarResposta({ ok: false, erro: 'Coluna id não encontrada.' });
+  const idP = String(id).trim();
+  for (let i = 1; i < dados.length; i++) {
+    if (String(dados[i][iId] || '').trim() === idP) {
+      if (iPagE >= 0) sheet.getRange(i+1, iPagE+1).setValue(pagEstado || 'Não pago');
+      if (iPagV >= 0) sheet.getRange(i+1, iPagV+1).setValue(pagValor  || '0');
+      if (iPagN >= 0) sheet.getRange(i+1, iPagN+1).setValue(pagNotas  || '—');
+      Logger.log('Pagamento actualizado: ' + idP);
+      return criarResposta({ ok: true });
+    }
+  }
+  return criarResposta({ ok: false, erro: 'Reserva não encontrada.' });
+}
+
+// ── Actualizar estado ───────────────────────────────────────────────
+function actualizarEstado(id, novoEstado) {
+  if (!id || !novoEstado) return criarResposta({ ok: false, erro: 'ID ou estado em falta.' });
+
+  const sheet   = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet)   return criarResposta({ ok: false, erro: 'Folha não encontrada.' });
+
+  const dados   = sheet.getDataRange().getValues();
+  const headers = dados[0];
+  const iId     = headers.indexOf('id');
+  const iEstado = headers.indexOf('estado');
+
+  if (iId < 0 || iEstado < 0) return criarResposta({ ok: false, erro: 'Colunas não encontradas.' });
+
+  const idProcurar = String(id).trim();
+  for (let i = 1; i < dados.length; i++) {
+    if (String(dados[i][iId] || '').trim() === idProcurar) {
+      sheet.getRange(i + 1, iEstado + 1).setValue(novoEstado);
+      Logger.log('Estado actualizado: ' + idProcurar + ' → ' + novoEstado);
+      return criarResposta({ ok: true });
+    }
+  }
+  return criarResposta({ ok: false, erro: 'Reserva não encontrada.' });
+}
+
+// ── TRIGGER HORÁRIA — auto-cancelar pendentes após 3h ───────────────
+// Configurar: Gatilhos → autoCancelarPendentes → A cada hora
+function autoCancelarPendentes() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) return;
+  const dados   = sheet.getDataRange().getValues();
+  const headers = dados[0];
+  const iEstado = headers.indexOf('estado');
+  const iData   = headers.indexOf('data_submissao');
+  if (iEstado < 0 || iData < 0) return;
+  const agora = new Date(), tresH = 3 * 60 * 60 * 1000;
+  let cancelados = 0;
+  for (let i = 1; i < dados.length; i++) {
+    const estado = (dados[i][iEstado] || '').toLowerCase().trim();
+    // BUG 5 FIX: A condição anterior incluía estado==='' (linha com estado vazio),
+    // o que cancelava linhas editadas manualmente sem querer. Agora só cancela 'pendente'.
+    if (estado !== 'pendente') continue;
+    const dataStr = dados[i][iData];
+    if (!dataStr) continue;
+    let d;
+    try {
+      d = new Date(dataStr);
+      if (isNaN(d)) {
+        const p = String(dataStr).match(/(\d{2})\/(\d{2})\/(\d{4}),?\s+(\d{2}):(\d{2})/);
+        if (p) d = new Date(p[3], p[2]-1, p[1], p[4], p[5]);
+      }
+    } catch(e) { continue; }
+    if (!d || isNaN(d)) continue;
+    if (agora - d > tresH) {
+      sheet.getRange(i + 1, iEstado + 1).setValue('Cancelado');
+      cancelados++;
+    }
+  }
+  Logger.log('autoCancelarPendentes: ' + cancelados + ' cancelada(s).');
+}
+
+// ── TRIGGER HORÁRIA — arquivar reservas expiradas ──────────────────
+// Move para a aba "Arquivo":
+//   • Reservas CONFIRMADAS cujo checkout já passou (hóspede já saiu)
+//   • Reservas CANCELADAS com mais de 7 dias (limpeza de histórico)
+// Configurar: Gatilhos → arquivarReservasExpiradas → A cada hora
+function arquivarReservasExpiradas() {
+  const ss      = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet   = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) return;
+
+  const dados   = sheet.getDataRange().getValues();
+  if (dados.length <= 1) { Logger.log('arquivar: folha vazia.'); return; }
+
+  const headers  = dados[0];
+  const iEstado  = headers.indexOf('estado');
+  const iCo      = headers.indexOf('checkout');
+  const iData    = headers.indexOf('data_submissao');
+
+  if (iEstado < 0 || iCo < 0) {
+    Logger.log('arquivar: colunas estado/checkout não encontradas.');
+    return;
+  }
+
+  const arquivo     = obterOuCriarAbaArquivo(ss, headers);
+  const agora       = new Date();
+  const hoje        = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+  const seteDias    = 7 * 24 * 60 * 60 * 1000;
+  const dataArquivo = agora.toLocaleString('pt-PT');
+
+  // Percorrer de baixo para cima para poder apagar linhas sem saltar índices
+  let arquivadas = 0;
+  for (let i = dados.length - 1; i >= 1; i--) {
+    const estado = (dados[i][iEstado] || '').toLowerCase().trim();
+    const coStr  = dados[i][iCo];
+    let   mover  = false;
+
+    if (estado === 'check-out') {
+      // Estado explícito de saída (Fase 1) — arquivar de imediato
+      mover = true;
+
+    } else if (estado === 'confirmado' || estado === 'check-in') {
+      // Compatibilidade: reservas antigas que nunca transitaram para "Check-out"
+      // são arquivadas quando o checkout já passou (hóspede presumivelmente saiu)
+      const coDate = parseDataLocalGS(coStr);
+      if (coDate && coDate < hoje) mover = true;
+
+    } else if (estado === 'cancelado') {
+      // Arquivar cancelamentos com mais de 7 dias
+      if (iData >= 0) {
+        const dSub = parseDataLocalGS(dados[i][iData]);
+        if (dSub && (agora - dSub) > seteDias) mover = true;
+      }
+    }
+
+    if (mover) {
+      // Copiar linha para Arquivo (+ data_arquivo no fim)
+      const linhaArq = dados[i].concat([dataArquivo]);
+      arquivo.appendRow(linhaArq);
+      sheet.deleteRow(i + 1);
+      arquivadas++;
+    }
+  }
+
+  Logger.log('arquivarReservasExpiradas: ' + arquivadas + ' movida(s) para Arquivo.');
+}
+
+// Auxiliar local (semelhante ao parseDataLocal do main.js, mas em GAS)
+function parseDataLocalGS(str) {
+  if (!str || str === '—') return null;
+  // Formato ISO: YYYY-MM-DD
+  let m = String(str).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+  // Formato pt-PT: DD/MM/YYYY
+  m = String(str).match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
+  const d = new Date(str);
+  return isNaN(d) ? null : d;
+}
+
+// ── CONFIGURAÇÃO INICIAL — executar UMA vez manualmente ─────────────
+function criarCabecalhosSeNecessario() {
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  let   sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) { sheet = ss.insertSheet(SHEET_NAME); }
+  const primeira = sheet.getRange(1,1).getValue();
+  if (!primeira || primeira === '') {
+    sheet.appendRow(['id','codigo','nome','email','telefone','tipo','checkin','checkout',
+                     'pessoas','quartos','observacoes','data_submissao','estado',
+                     'pagamento_estado','pagamento_valor','pagamento_notas']);
+    const cab = sheet.getRange(1,1,1,16);
+    cab.setFontWeight('bold');
+    cab.setBackground('#2b2b2b');
+    cab.setFontColor('#ffffff');
+    sheet.setFrozenRows(1);
+    Logger.log('Cabeçalhos criados.');
+  } else {
+    Logger.log('Cabeçalhos já existem: ' + primeira);
+  }
+  // Garantir que a aba Arquivo também existe
+  const headers = sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0];
+  obterOuCriarAbaArquivo(ss, headers);
+  Logger.log('Configuração inicial concluída.');
+}
+
+// ── MIGRAÇÃO — executar UMA vez se a folha "Reservas" já existir e não
+// tiver a coluna "codigo" (sites já em produção antes da Fase 1).
+// Adiciona a coluna e gera códigos retroactivos para as linhas existentes.
+function migrarColunaCodigo() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) { Logger.log('Folha Reservas não encontrada.'); return; }
+
+  const lastRow = sheet.getLastRow();
+  const lastCol = sheet.getLastColumn();
+  if (lastRow < 1) { Logger.log('Folha vazia.'); return; }
+
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  if (headers.indexOf('codigo') >= 0) { Logger.log('Coluna codigo já existe.'); return; }
+
+  // Inserir nova coluna logo a seguir a "id"
+  const iId = headers.indexOf('id');
+  const colInsert = iId >= 0 ? iId + 2 : 2;
+  sheet.insertColumnBefore(colInsert);
+  sheet.getRange(1, colInsert).setValue('codigo');
+  sheet.getRange(1, colInsert).setFontWeight('bold').setBackground('#2b2b2b').setFontColor('#ffffff');
+
+  if (lastRow > 1) {
+    const iData = headers.indexOf('data_submissao');
+    const contadorPorDia = {};
+    for (let i = 2; i <= lastRow; i++) {
+      let dataRef = new Date();
+      if (iData >= 0) {
+        const parsed = parseDataLocalGS(sheet.getRange(i, iData + 1).getValue());
+        if (parsed) dataRef = parsed;
+      }
+      const y = dataRef.getFullYear(), m = String(dataRef.getMonth()+1).padStart(2,'0'), d = String(dataRef.getDate()).padStart(2,'0');
+      const chave = y + m + d;
+      contadorPorDia[chave] = (contadorPorDia[chave] || 0) + 1;
+      const codigo = 'RR-' + chave + '-' + String(contadorPorDia[chave]).padStart(4, '0');
+      sheet.getRange(i, colInsert).setValue(codigo);
+    }
+  }
+  Logger.log('Migração concluída: coluna codigo criada e preenchida.');
+}
