@@ -16,7 +16,7 @@
   --branco:    #FFFFFF;
   --bd:        rgba(92,61,46,0.12);
   --verde:     #4A7C59;
-  --radius:    12px;
+  --radius:    14px;
   --shadow:    0 4px 24px rgba(92,61,46,0.10);
   --shadow-h:  0 12px 40px rgba(92,61,46,0.16);
 }
@@ -63,9 +63,9 @@ nav.scrolled{box-shadow:0 4px 24px rgba(92,61,46,.10)}
 .hero-slides{position:absolute;inset:0}
 .hero-slide{position:absolute;inset:0;opacity:0;background-size:cover;background-position:center;transition:opacity 1.5s ease}
 .hero-slide.active{opacity:1}
-.hero-slide-1{background-image:url('fotos/piscina1.jpg')}
-.hero-slide-2{background-image:url('fotos/estabelecimento.jpg')}
-.hero-slide-3{background-image:url('fotos/piscina2.jpg')}
+.hero-slide-1{background-image:url('fotos/piscina1.webp')}
+.hero-slide-2{background-image:url('fotos/estabelecimento.webp')}
+.hero-slide-3{background-image:url('fotos/piscina2.webp')}
 .hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(44,24,16,.88) 0%,rgba(44,24,16,.48) 60%,rgba(44,24,16,.18) 100%)}
 .hero-body{position:relative;padding:0 6vw;max-width:720px;animation:fadeUp 1s ease 2.3s both}
 .hero-pill{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(232,121,74,.5);color:var(--laranja-c);font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;padding:6px 16px;margin-bottom:22px;font-weight:500;border-radius:20px}
@@ -318,4 +318,56 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   .rb-imgs{grid-template-columns:1fr}.ri:first-child{grid-column:auto;aspect-ratio:4/3}
   .loc-g{grid-template-columns:1fr}
   .lb-prev{left:4px}.lb-next{right:4px}
+}
+
+/* ── CALENDÁRIO VISUAL (Fase 2) ── */
+.cal-wrap{border:1px solid var(--bd);border-radius:10px;padding:14px;background:var(--branco)}
+.cal-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.62rem;color:var(--texto-s);margin-bottom:10px;letter-spacing:.02em}
+.cal-legend .lg{display:flex;align-items:center;gap:5px}
+.cal-legend .lg::before{content:'';width:9px;height:9px;border-radius:3px;display:inline-block}
+.cal-legend .lg.livre::before{background:var(--verde)}
+.cal-legend .lg.pouco::before{background:#C4860B}
+.cal-legend .lg.esgotado::before{background:#C0392B}
+.cal-nav{display:flex;align-items:center;gap:6px}
+.cal-arrow{background:var(--creme);border:1px solid var(--bd);border-radius:6px;width:30px;height:30px;flex:0 0 auto;font-size:1rem;color:var(--texto);cursor:pointer;transition:background .2s}
+.cal-arrow:hover:not(:disabled){background:var(--bd)}
+.cal-arrow:disabled{opacity:.35;cursor:not-allowed}
+.cal-months{display:flex;gap:18px;flex:1;overflow-x:auto}
+.cal-month{flex:1;min-width:230px}
+.cal-month-title{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:600;text-align:center;margin-bottom:8px;color:var(--texto)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-grid-head{margin-bottom:4px}
+.cal-dh{text-align:center;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--texto-l);font-weight:600}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:.72rem;border-radius:6px;cursor:default;color:var(--texto);background:rgba(74,124,89,.08)}
+.cal-day.out{background:none;visibility:hidden}
+.cal-day.passado{color:var(--texto-l);background:none;opacity:.4}
+.cal-day.livre{background:rgba(74,124,89,.12);cursor:pointer}
+.cal-day.livre:hover{background:rgba(74,124,89,.25)}
+.cal-day.pouco{background:rgba(196,134,11,.16);cursor:pointer;color:#8a5c08}
+.cal-day.pouco:hover{background:rgba(196,134,11,.3)}
+.cal-day.esgotado{background:rgba(192,57,43,.1);color:#a33;text-decoration:line-through;cursor:not-allowed}
+.cal-day.sel-ini,.cal-day.sel-fim{background:var(--verde);color:#fff;font-weight:700}
+.cal-day.in-range{background:rgba(74,124,89,.35)}
+.cal-summary{margin-top:12px;font-size:.78rem;color:var(--texto-s);text-align:center}
+.cal-hint{color:var(--texto-l)}
+@media(max-width:640px){
+  .cal-nav{flex-wrap:wrap}
+  .cal-months{flex-direction:column}
+  .cal-month{min-width:0}
+}
+
+/* ── IMPRESSÃO (Fase 4) ── */
+.print-only{display:none}
+@media print{
+  body *{visibility:hidden}
+  .print-only,.print-only *{visibility:visible}
+  .print-only{display:block !important;position:absolute;top:0;left:0;width:100%;padding:24px;background:#fff}
+  .print-card h1{font-family:'Cormorant Garamond',serif;font-size:1.6rem;margin-bottom:2px}
+  .print-card .print-sub{font-size:.75rem;color:#555;margin-bottom:18px}
+  .print-card h2{font-family:'Cormorant Garamond',serif;font-size:1.2rem;border-bottom:1px solid #ccc;padding-bottom:8px;margin-bottom:10px}
+  .print-card .print-codigo{font-size:.95rem;margin-bottom:16px}
+  .print-card table{width:100%;border-collapse:collapse;font-size:.85rem}
+  .print-card table td{padding:8px 6px;border-bottom:1px solid #eee}
+  .print-card table td:first-child{font-weight:600;width:35%;color:#555}
+  .print-card .print-nota{margin-top:20px;font-size:.72rem;color:#777;line-height:1.5}
 }
