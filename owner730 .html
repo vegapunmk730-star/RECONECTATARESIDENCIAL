@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADM — Reconecta Residencial</title>
+<meta name="description" content="Painel de administração — Reconecta Residencial">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/jpeg" href="fotos/logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--v:#444444;--ve:#2b2b2b;--o:#e8521a;--oc:#ff7a45;--cr:#f2f2f2;--esc:#121212;--cz:#7a7a7a;--czc:#bfbfbf;--bd:rgba(0,0,0,0.08);--ok:#2d8a4e;--err:#c0392b;--warn:#d4860b;--radius:14px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Outfit',sans-serif;background:#f0f0f0;color:var(--esc);min-height:100vh}
+#loginScreen{position:fixed;inset:0;background:var(--ve);display:flex;align-items:center;justify-content:center;z-index:9999;overflow:hidden}
+.login-bg{position:absolute;inset:0;z-index:0}
+.login-bg-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;animation:loginFade 20s infinite}
+.login-bg-slide:nth-child(1){background-image:url('fotos/piscina1.webp');animation-delay:0s}
+.login-bg-slide:nth-child(2){background-image:url('fotos/estabelecimento.webp');animation-delay:5s}
+.login-bg-slide:nth-child(3){background-image:url('fotos/bar1.webp');animation-delay:10s}
+.login-bg-slide:nth-child(4){background-image:url('fotos/comida1.webp');animation-delay:15s}
+@keyframes loginFade{0%{opacity:0}4%{opacity:1}21%{opacity:1}25%{opacity:0}100%{opacity:0}}
+.login-bg-overlay{position:absolute;inset:0;background:linear-gradient(160deg,rgba(30,18,10,.58) 0%,rgba(43,43,43,.30) 55%,rgba(30,18,10,.62) 100%);z-index:1}
+.login-box{position:relative;z-index:2;background:rgba(255,255,255,0.16);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.28);padding:52px 44px;width:100%;max-width:400px;box-shadow:0 40px 100px rgba(0,0,0,0.45);margin:20px;border-radius:var(--radius)}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-logo img{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.5)}
+.login-title{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:400;text-align:center;color:#fff;margin-top:14px}
+.login-title em{color:var(--oc);font-style:italic}
+.login-sub{font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,.65);text-align:center;margin-top:6px;margin-bottom:6px}
+.login-code-hint{font-size:0.82rem;color:rgba(255,255,255,.65);text-align:center;margin-bottom:28px;font-family:'Cormorant Garamond',serif;font-style:italic}
+.login-code-hint strong{color:var(--oc);font-style:normal;letter-spacing:0.08em;font-size:1rem}
+.lf{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
+.lf label{font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,.7);font-weight:600}
+.lf input{padding:12px 14px;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.12);font-family:'Outfit',sans-serif;font-size:0.9rem;color:#fff;outline:none;transition:border-color 0.2s;border-radius:9px}
+.lf input::placeholder{color:rgba(255,255,255,.45)}
+.lf input:focus{border-color:var(--oc)}
+.login-btn{width:100%;background:var(--o);color:#fff;border:none;padding:14px;font-family:'Outfit',sans-serif;font-size:0.76rem;letter-spacing:0.16em;text-transform:uppercase;font-weight:600;cursor:pointer;transition:background 0.2s;margin-top:8px;border-radius:9px}
+.login-btn:hover{background:var(--oc)}
+.login-err{display:none;background:rgba(255,240,238,0.92);border:1px solid var(--o);padding:10px 14px;margin-top:12px;font-size:0.78rem;color:#a93226;text-align:center;border-radius:9px}
+#app{display:none;min-height:100vh}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:240px;background:var(--ve);z-index:100;display:flex;flex-direction:column;overflow-y:auto}
+.sb-logo{padding:28px 24px 24px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.sb-logo img{width:42px;height:42px;border-radius:50%;object-fit:cover}
+.sb-name{font-family:'Cormorant Garamond',serif;font-size:1rem;color:#fff;font-weight:400;margin-top:10px;line-height:1.2}
+.sb-name em{color:var(--oc);font-style:italic}
+.sb-role{font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-top:3px}
+.sb-nav{padding:20px 0;flex:1}
+.sb-section{font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.25);padding:14px 24px 8px;margin-top:8px}
+.sb-link{display:flex;align-items:center;gap:12px;padding:11px 24px;color:rgba(255,255,255,0.55);text-decoration:none;font-size:0.78rem;font-weight:500;cursor:pointer;transition:all 0.2s;border-left:3px solid transparent}
+.sb-link:hover{color:#fff;background:rgba(255,255,255,0.04)}
+.sb-link.active{color:#fff;background:rgba(255,255,255,0.07);border-left-color:var(--oc)}
+.sb-link svg{width:16px;fill:currentColor;flex-shrink:0;opacity:0.7}
+.sb-bottom{padding:20px 24px;border-top:1px solid rgba(255,255,255,0.07)}
+.logout-btn{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,0.4);font-size:0.73rem;cursor:pointer;transition:color 0.2s;background:none;border:none;font-family:'Outfit',sans-serif;width:100%;border-radius:9px}
+.logout-btn:hover{color:var(--oc)}
+.logout-btn svg{width:15px;fill:currentColor}
+.main{margin-left:240px;min-height:100vh}
+.topbar{background:#fff;padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:50}
+.topbar-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:400}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.topbar-date{font-size:0.72rem;color:var(--czc)}
+.refresh-btn{background:none;border:1px solid var(--bd);padding:8px 16px;font-family:'Outfit',sans-serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;color:var(--cz);transition:all 0.2s;display:flex;align-items:center;gap:7px;border-radius:9px}
+.refresh-btn:hover{border-color:var(--v);color:var(--v)}
+.refresh-btn svg{width:13px;fill:currentColor}
+.new-btn{background:var(--o);color:#fff;border:none;padding:9px 18px;font-family:'Outfit',sans-serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 0.2s;border-radius:9px}
+.new-btn:hover{background:var(--oc)}
+.new-btn svg{width:13px;fill:#fff}
+.content{padding:32px}
+.tab-content{display:none}.tab-content.active{display:block}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.stat{background:#fff;padding:24px;border:1px solid var(--bd);position:relative;overflow:hidden;border-radius:var(--radius)}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--o)}
+.stat.green::after{background:var(--ok)}.stat.amber::after{background:var(--warn)}.stat.red::after{background:var(--err)}
+.stat-n{font-family:'Cormorant Garamond',serif;font-size:2.6rem;font-weight:600;line-height:1;margin-bottom:6px}
+.stat-l{font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--czc)}
+.stat[onclick]{transition:box-shadow 0.15s,transform 0.15s}
+.stat[onclick]:hover{box-shadow:0 4px 16px rgba(0,0,0,0.10);transform:translateY(-1px)}
+.table-wrap{background:#fff;border:1px solid var(--bd);overflow:hidden;border-radius:var(--radius)}
+.table-header{padding:20px 24px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.table-header h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600}
+.table-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.search-input{padding:9px 14px;border:1px solid var(--bd);font-family:'Outfit',sans-serif;font-size:0.8rem;color:var(--esc);outline:none;background:var(--cr);width:220px;transition:border-color 0.2s;border-radius:9px}
+.search-input:focus{border-color:var(--v)}
+.filter-sel{padding:9px 14px;border:1px solid var(--bd);font-family:'Outfit',sans-serif;font-size:0.8rem;color:var(--esc);outline:none;background:var(--cr);cursor:pointer;border-radius:9px}
+.export-btn{background:var(--v);color:#fff;border:none;padding:9px 18px;font-family:'Outfit',sans-serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 0.2s;border-radius:9px}
+.export-btn:hover{background:var(--ve)}.export-btn svg{width:13px;fill:#fff}
+table{width:100%;border-collapse:collapse;font-size:0.82rem}
+thead th{background:#f8f8f8;padding:11px 16px;text-align:left;font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--czc);font-weight:600;border-bottom:1px solid var(--bd);white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(0,0,0,0.04);transition:background 0.15s}
+tbody tr:hover{background:#fafafa}
+td{padding:13px 16px;vertical-align:middle;line-height:1.5}
+.badge{display:inline-block;padding:3px 10px;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;border-radius:20px}
+.badge.confirmado{background:rgba(45,138,78,0.1);color:var(--ok)}
+.badge.cancelado{background:rgba(192,57,43,0.1);color:var(--err)}
+.badge.pendente{background:rgba(212,134,11,0.1);color:var(--warn)}
+.badge.checkin{background:rgba(43,108,176,0.12);color:#2b6cb0}
+.badge.checkout{background:rgba(90,90,90,0.12);color:#5a5a5a}
+.badge.pago{background:rgba(45,138,78,0.15);color:var(--ok)}
+.badge.nao-pago{background:rgba(192,57,43,0.1);color:var(--err)}
+.badge.parcial{background:rgba(212,134,11,0.1);color:var(--warn)}
+.action-btn{background:none;border:1px solid var(--bd);padding:5px 14px;font-family:'Outfit',sans-serif;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;color:var(--cz);border-radius:9px}
+.action-btn:hover{border-color:var(--v);color:var(--v)}
+.action-btn.del{border-color:rgba(192,57,43,0.3);color:var(--err)}
+.action-btn.del:hover{background:var(--err);color:#fff;border-color:var(--err)}
+.no-data{text-align:center;padding:60px 20px;color:var(--czc)}
+.no-data p{font-size:0.82rem}
+.loading{text-align:center;padding:48px;color:var(--czc);font-size:0.82rem}
+.spinner{width:28px;height:28px;border:2px solid var(--bd);border-top-color:var(--o);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pagination{padding:16px 24px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--bd);font-size:0.75rem;color:var(--cz)}
+.pag-btns{display:flex;gap:6px}
+.pag-btn{background:none;border:1px solid var(--bd);padding:6px 12px;font-family:'Outfit',sans-serif;font-size:0.72rem;cursor:pointer;color:var(--cz);transition:all 0.2s;border-radius:9px}
+.pag-btn:hover:not(:disabled){border-color:var(--v);color:var(--v)}
+.pag-btn:disabled{opacity:0.35;cursor:not-allowed}
+.pag-btn.active{background:var(--v);border-color:var(--v);color:#fff}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:500;align-items:flex-start;justify-content:center;padding:32px 20px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;width:100%;max-width:640px;margin:auto;border-radius:var(--radius)}
+.modal.wide{max-width:780px}
+.modal-head{padding:20px 28px;border-bottom:1px solid var(--bd);display:flex;align-items:flex-start;justify-content:space-between;background:var(--ve)}
+.modal-head-left h3{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:400;color:#fff}
+.modal-head-id{font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-top:4px}
+.modal-close{background:none;border:none;font-size:1.6rem;cursor:pointer;color:rgba(255,255,255,0.5);padding:0 4px;line-height:1}
+.modal-close:hover{color:#fff}
+.modal-section{padding:20px 28px;border-bottom:1px solid var(--bd)}
+.modal-section-title{font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--czc);margin-bottom:14px;font-weight:600}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.detail-item{background:var(--cr);padding:12px 14px;border-radius:2px}
+.detail-item.full{grid-column:1/-1}
+.detail-lb{font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--czc);margin-bottom:5px}
+.detail-val{font-size:0.85rem;color:var(--esc);font-weight:500;line-height:1.5}
+.detail-val a{color:var(--o);text-decoration:none}
+.email-area{width:100%;padding:12px 14px;border:1px solid var(--bd);background:#fff;font-family:'Outfit',sans-serif;font-size:0.82rem;color:var(--esc);outline:none;resize:vertical;min-height:140px;transition:border-color 0.2s;margin-top:8px;line-height:1.7;border-radius:9px}
+.email-area:focus{border-color:var(--v)}
+.modal-actions{padding:18px 28px;display:flex;gap:10px;flex-wrap:wrap;background:#fafafa;border-top:1px solid var(--bd)}
+.btn-confirm{background:var(--ok);color:#fff;border:none;padding:11px 20px;font-family:'Outfit',sans-serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;cursor:pointer;transition:all 0.2s;border-radius:9px}
+.btn-confirm:hover{background:#237a42}
+.btn-cancel-res{background:var(--err);color:#fff;border:none;padding:11px 20px;font-family:'Outfit',sans-serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;cursor:pointer;transition:background 0.2s;border-radius:9px}
+.btn-cancel-res:hover{background:#a93226}
+.btn-delete{background:#fff;color:var(--err);border:1px solid var(--err);padding:11px 20px;font-family:'Outfit',sans-serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;cursor:pointer;transition:all 0.2s;border-radius:9px}
+.btn-delete:hover{background:var(--err);color:#fff}
+.btn-email{background:var(--v);color:#fff;border:none;padding:11px 20px;font-family:'Outfit',sans-serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;cursor:pointer;transition:background 0.2s;display:flex;align-items:center;gap:7px;border-radius:9px}
+.btn-email:hover{background:var(--ve)}.btn-email svg{width:14px;fill:#fff}
+.btn-wa{background:#25D366;color:#fff;border:none;padding:11px 20px;font-family:'Outfit',sans-serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;cursor:pointer;transition:background 0.2s;display:flex;align-items:center;gap:7px;text-decoration:none;border-radius:9px}
+.btn-wa:hover{background:#1fb558}.btn-wa svg{width:14px;fill:#fff}
+.btn-print{background:#555;color:#fff;border:none;padding:11px 20px;font-family:'Outfit',sans-serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;cursor:pointer;transition:background 0.2s;display:flex;align-items:center;gap:7px;border-radius:9px}
+.btn-print:hover{background:#333}.btn-print svg{width:14px;fill:#fff}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px}
+.dash-card{background:#fff;border:1px solid var(--bd);padding:24px;border-radius:var(--radius)}
+.dash-card h4{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+.recent-item{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid rgba(0,0,0,0.04);cursor:pointer}
+.recent-item:last-child{border:none}
+.ri-dot{width:8px;height:8px;border-radius:50%;background:var(--warn);flex-shrink:0;margin-top:5px}
+.ri-name{font-size:0.84rem;font-weight:500}
+.ri-meta{font-size:0.72rem;color:var(--czc);margin-top:2px}
+.tipo-bar{display:flex;flex-direction:column;gap:10px}
+.tipo-row{display:flex;align-items:center;gap:12px;font-size:0.78rem}
+.tipo-label{width:160px;color:var(--cz);flex-shrink:0;font-size:0.75rem}
+.tipo-track{flex:1;background:#eee;height:6px;border-radius:4px}
+.tipo-fill{height:100%;background:var(--o);transition:width 0.6s;border-radius:4px}
+.tipo-count{font-size:0.72rem;color:var(--czc);width:24px;text-align:right}
+/* Quartos */
+.quartos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.qcard::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ok)}
+.qcard.quase::after{background:var(--warn)}.qcard.cheio::after{background:var(--err)}
+.qcard-nome{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;margin-bottom:8px}
+.qcard-num{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:600;line-height:1}
+.qcard-sub{font-size:0.68rem;color:var(--czc);margin-top:2px}
+.qcard-bar{margin-top:10px;background:#eee;height:5px;border-radius:4px}
+.qcard-fill{height:100%;transition:width 0.5s;background:var(--ok);border-radius:4px}
+.qcard-fill.quase{background:var(--warn)}.qcard-fill.cheio{background:var(--err)}
+.qcard-ocp{font-size:0.7rem;color:var(--czc);margin-top:5px}
+.qcard-row{display:flex;gap:6px;margin-top:10px}
+.qcard-btn-sm{flex:1;padding:5px 4px;border:none;border-radius:6px;font-family:'Outfit',sans-serif;font-size:0.6rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:opacity 0.15s}
+.qcard-btn-sm:hover{opacity:0.8}
+.qcard-btn-sm.disp{background:rgba(45,138,78,0.12);color:var(--ok)}
+.qcard-btn-sm.ocp{background:rgba(180,80,50,0.12);color:var(--err)}
+/* Today */
+.today-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px}
+.today-card{background:#fff;border:1px solid var(--bd);padding:20px;border-radius:var(--radius)}
+.today-card h4{font-family:'Cormorant Garamond',serif;font-size:1.05rem;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--bd)}
+.titem{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(0,0,0,0.04);font-size:0.81rem;cursor:pointer}
+.titem:last-child{border:none}
+.titem:hover{background:#fafafa}
+.tempty{font-size:0.79rem;color:var(--czc);padding:12px 0;text-align:center}
+/* Form nova */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid .full{grid-column:1/-1}
+.ff{display:flex;flex-direction:column;gap:6px}
+.ff label{font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--cz);font-weight:600}
+.ff input,.ff select,.ff textarea{padding:10px 13px;border:1px solid var(--bd);background:var(--cr);font-family:'Outfit',sans-serif;font-size:0.84rem;color:var(--esc);outline:none;transition:border-color 0.2s;width:100%;border-radius:9px}
+.ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--v);background:#fff}
+.ff input.required-err,.ff select.required-err{border-color:var(--err)!important;background:#fff8f7!important}
+.ff textarea{resize:vertical;min-height:80px}
+.form-err{display:none;background:#fff0ee;border:1px solid var(--o);padding:10px 14px;margin-top:10px;font-size:0.78rem;color:var(--o)}
+.preco-calc{background:rgba(232,82,26,0.06);border:1px solid rgba(232,82,26,0.2);padding:12px 14px;margin-top:10px;font-size:0.83rem;border-radius:2px}
+.preco-calc strong{color:var(--o)}
+.qcard{background:#fff;border:1px solid var(--bd);padding:22px;position:relative;overflow:hidden;cursor:pointer;transition:box-shadow 0.2s;border-radius:var(--radius)}
+.qcard:hover{box-shadow:0 4px 20px rgba(0,0,0,0.1)}
+.qcard-btn{margin-top:10px;width:100%;background:var(--o);color:#fff;border:none;padding:7px;font-family:'Outfit',sans-serif;font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;cursor:pointer;transition:background 0.2s;border-radius:9px}
+.qcard-btn:hover{background:var(--oc)}
+/* Settings */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.settings-card{background:#fff;border:1px solid var(--bd);padding:28px;border-radius:var(--radius)}
+.settings-card h4{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+.sf{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
+.sf label{font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--cz);font-weight:600}
+.sf input{padding:10px 13px;border:1px solid var(--bd);background:var(--cr);font-family:'Outfit',sans-serif;font-size:0.84rem;color:var(--esc);outline:none;transition:border-color 0.2s;width:100%;border-radius:9px}
+.sf input:focus{border-color:var(--v)}
+.save-btn{background:var(--v);color:#fff;border:none;padding:11px 24px;font-family:'Outfit',sans-serif;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;cursor:pointer;transition:background 0.2s;border-radius:9px}
+.save-btn:hover{background:var(--ve)}
+/* Confirm delete */
+.confirm-box{background:#fff;padding:36px;max-width:420px;width:100%;margin:auto;box-shadow:0 40px 100px rgba(0,0,0,0.3);text-align:center;border-radius:var(--radius)}
+.confirm-box h3{font-family:'Cormorant Garamond',serif;font-size:1.4rem;margin-bottom:12px}
+.confirm-box p{font-size:0.83rem;color:var(--cz);margin-bottom:24px;line-height:1.6}
+.confirm-btns{display:flex;gap:12px;justify-content:center}
+.confirm-btns button{padding:11px 24px;font-family:'Outfit',sans-serif;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;border-radius:9px}
+.cb-no{background:var(--cr);color:var(--cz)}.cb-no:hover{background:#e0e0e0}
+.cb-yes{background:var(--err);color:#fff}.cb-yes:hover{background:#a93226}
+/* Toast */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--esc);color:#fff;padding:14px 22px;font-size:0.78rem;z-index:9999;transform:translateY(80px);opacity:0;transition:all 0.35s;border-left:3px solid var(--oc);max-width:300px;border-radius:var(--radius)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-left-color:var(--ok)}.toast.err{border-left-color:var(--err)}
+.mob-sidebar-btn{display:none;background:none;border:none;cursor:pointer;padding:6px;flex-direction:column;gap:5px}
+.mob-sidebar-btn span{display:block;width:20px;height:2px;background:var(--esc)}
+
+/* ── IMPRESSÃO ── */
+.print-only{display:none}
+@media print{
+  body *{visibility:hidden}
+  .print-only,.print-only *{visibility:visible}
+  .print-only{display:block !important;position:absolute;top:0;left:0;width:100%;padding:24px;background:#fff}
+  .print-card h1{font-family:'Cormorant Garamond',serif;font-size:1.6rem;margin-bottom:2px}
+  .print-card .print-sub{font-size:.75rem;color:#555;margin-bottom:18px}
+  .print-card h2{font-family:'Cormorant Garamond',serif;font-size:1.2rem;border-bottom:1px solid #ccc;padding-bottom:8px;margin-bottom:10px}
+  .print-card .print-codigo{font-size:.95rem;margin-bottom:16px}
+  .print-card table{width:100%;border-collapse:collapse;font-size:.85rem}
+  .print-card table td{padding:8px 6px;border-bottom:1px solid #eee}
+  .print-card table td:first-child{font-weight:600;width:35%;color:#555}
+  .print-card .print-nota{margin-top:20px;font-size:.72rem;color:#777;line-height:1.5}
+  .print-card table.print-hist{font-size:.72rem}
+  .print-card table.print-hist th{text-align:left;padding:6px;border-bottom:2px solid #999;text-transform:uppercase;letter-spacing:.04em;font-size:.62rem}
+  .print-card table.print-hist td{padding:6px;border-bottom:1px solid #eee}
+}
+@media(max-width:1100px){.quartos-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.sidebar{width:200px}.main{margin-left:200px}.stats-row,.quartos-grid{grid-template-columns:1fr 1fr}.detail-grid,.form-grid{grid-template-columns:1fr}.dash-grid,.settings-grid,.today-cols{grid-template-columns:1fr}.content{padding:20px}}
+@media(max-width:640px){.sidebar{display:none}.main{margin-left:0}.mob-sidebar-btn{display:flex!important}.sidebar.mob-open{display:flex!important;z-index:300}.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:299}.sidebar-overlay.show{display:block}.quartos-grid{grid-template-columns:1fr 1fr}.stats-row{grid-template-columns:1fr 1fr}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-bg">
+    <div class="login-bg-slide"></div>
+    <div class="login-bg-slide"></div>
+    <div class="login-bg-slide"></div>
+    <div class="login-bg-slide"></div>
+  </div>
+  <div class="login-bg-overlay"></div>
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="fotos/logo.jpg" alt="Reconecta" onerror="this.style.display='none'">
+      <div class="login-title">Reconecta <em>ADM</em></div>
+      <div class="login-sub">Acesso Restrito</div>
+    </div>
+    <div class="lf" style="display:none"><label>Email</label><input type="email" id="lUser" value="vegapunmk730@gmail.com" autocomplete="username"></div>
+    <div class="lf"><label>Palavra-passe</label><input type="password" id="lPass" placeholder="••••••••" autofocus onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="login-btn" onclick="doLogin()">Entrar no Painel</button>
+    <div class="login-err" id="loginErr">Credenciais incorrectas. Tente novamente.</div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="sidebar">
+    <div class="sb-logo">
+      <img src="fotos/logo.jpg" alt="Reconecta" onerror="this.style.display='none'">
+      <div class="sb-name">Reconecta <em>Residencial</em></div>
+      <div class="sb-role">Painel Administrativo</div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-section">Principal</div>
+      <div class="sb-link active" onclick="showTab('dashboard',this)">
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>Dashboard
+      </div>
+      <div class="sb-link" onclick="showTab('quartos',this)">
+        <svg viewBox="0 0 24 24"><path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/></svg>Quartos
+      </div>
+      <div class="sb-link" onclick="showTab('reservas',this)">
+        <svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>Reservas
+      </div>
+      <div class="sb-section">Outros</div>
+      <div class="sb-link" onclick="showTab('config',this)">
+        <svg viewBox="0 0 24 24"><path d="M12 15.5A3.5 3.5 0 018.5 12 3.5 3.5 0 0112 8.5a3.5 3.5 0 013.5 3.5 3.5 3.5 0 01-3.5 3.5m7.43-2.92c.04-.3.07-.61.07-.92s-.03-.63-.07-.93l2-1.56c.18-.14.23-.41.12-.62l-1.9-3.29c-.12-.22-.37-.29-.59-.22l-2.36.95c-.49-.38-1.02-.7-1.6-.93l-.36-2.51c-.04-.24-.24-.41-.48-.41h-3.8c-.24 0-.43.17-.47.41l-.36 2.51c-.58.23-1.11.55-1.6.93l-2.36-.95c-.22-.07-.47 0-.59.22l-1.9 3.29c-.12.21-.07.48.12.62l2 1.56c-.04.3-.07.62-.07.93s.03.63.07.93l-2 1.56c-.18.14-.23.41-.12.62l1.9 3.29c.12.22.37.29.59.22l2.36-.95c.49.38 1.02.7 1.6.93l.36 2.51c.04.24.24.41.48.41h3.8c.24 0 .44-.17.47-.41l.36-2.51c.58-.23 1.11-.55 1.6-.93l2.36.95c.22.07.47 0 .59-.22l1.9-3.29c.12-.21.07-.48-.12-.62l-2-1.56z"/></svg>Configurações
+      </div>
+      <a href="index.html" class="sb-link" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>Ver Site
+      </a>
+    </nav>
+    <div class="sb-bottom">
+      <button class="logout-btn" onclick="doLogout()">
+        <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4a2 2 0 00-2 2v14a2 2 0 002 2h8v-2H4V5z"/></svg>
+        Terminar sessão
+      </button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="mob-sidebar-btn" onclick="toggleAdmSidebar()" aria-label="Menu"><span></span><span></span><span></span></button>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="topbarDate"></div>
+        <span id="lastUpdate" style="font-size:0.6rem;color:var(--czc);margin-right:8px;align-self:center"></span>
+        <button class="refresh-btn" onclick="loadReservas()">
+          <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>Actualizar
+        </button>
+        <button class="new-btn" onclick="abrirNovaReserva()">
+          <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>Nova Reserva
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="tab-content active" id="tab-dashboard">
+        <div class="stats-row">
+          <div class="stat"><div class="stat-n" id="sTot">—</div><div class="stat-l">Total de pedidos</div></div>
+          <div class="stat green" onclick="irParaReservasEstado('confirmado')" style="cursor:pointer" title="Ver reservas confirmadas"><div class="stat-n" id="sConf">—</div><div class="stat-l">Confirmadas ›</div></div>
+          <div class="stat amber" onclick="irParaReservasEstado('pendente')" style="cursor:pointer" title="Ver reservas pendentes"><div class="stat-n" id="sPend">—</div><div class="stat-l">Pendentes ›</div></div>
+          <div class="stat" onclick="irParaReservasEstado('check-in')" style="cursor:pointer" title="Ver hóspedes em estadia"><div class="stat-n" id="sCheckin">—</div><div class="stat-l">Em estadia ›</div></div>
+          <div class="stat red"><div class="stat-n" id="sCanc">—</div><div class="stat-l">Canceladas</div></div>
+        </div>
+        <div class="today-cols">
+          <div class="today-card">
+            <h4>🟢 Check-ins de hoje</h4>
+            <div id="todayIn"><div class="loading"><div class="spinner"></div>A carregar...</div></div>
+          </div>
+          <div class="today-card">
+            <h4>🔴 Check-outs de hoje</h4>
+            <div id="todayOut"><div class="loading"><div class="spinner"></div>A carregar...</div></div>
+          </div>
+        </div>
+        <div class="dash-grid">
+          <div class="dash-card">
+            <h4>Últimas reservas</h4>
+            <div id="recentList"><div class="loading"><div class="spinner"></div>A carregar...</div></div>
+          </div>
+          <div class="dash-card">
+            <h4>Reservas por tipo</h4>
+            <div class="tipo-bar" id="tipoBars"><div class="loading"><div class="spinner"></div>A carregar...</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUARTOS -->
+      <div class="tab-content" id="tab-quartos">
+        <div class="quartos-grid" id="quartosGrid">
+          <div class="loading" style="grid-column:1/-1"><div class="spinner"></div>A carregar...</div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-header">
+            <h3>Hóspedes em curso</h3>
+            <span style="font-size:0.73rem;color:var(--czc)">Clique em "Ver detalhes" para abrir a reserva completa</span>
+          </div>
+          <div id="hospedesTable"><div class="loading"><div class="spinner"></div>A carregar...</div></div>
+        </div>
+      </div>
+
+      <!-- RESERVAS -->
+      <div class="tab-content" id="tab-reservas">
+        <div class="table-wrap">
+          <div class="table-header">
+            <h3>Pedidos de Reserva</h3>
+            <div class="table-controls">
+              <input class="search-input" type="text" placeholder="Nome, email, telefone ou tipo de quarto..." oninput="filterTable(this.value)" id="searchInput">
+              <select class="filter-sel" onchange="filterStatus(this.value)" id="statusFilter">
+                <option value="">Todos os estados</option>
+                <option value="Pendente">Pendente</option>
+                <option value="Confirmado">Confirmado</option>
+                <option value="Check-in">Check-in</option>
+                <option value="Check-out">Check-out</option>
+                <option value="Cancelado">Cancelado</option>
+              </select>
+              <button class="export-btn" onclick="exportCSV()">
+                <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>Exportar CSV
+              </button>
+              <button class="export-btn" onclick="imprimirHistorico()" style="background:#555">
+                <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Imprimir Histórico
+              </button>
+            </div>
+          </div>
+          <div id="tableArea"><div class="loading"><div class="spinner"></div>A carregar...</div></div>
+          <div class="pagination" id="paginationBar" style="display:none">
+            <span id="pagInfo"></span>
+            <div class="pag-btns" id="pagBtns"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONFIG -->
+      <div class="tab-content" id="tab-config">
+        <div class="settings-grid" style="grid-template-columns:1fr">
+          <div class="settings-card">
+            <h4>Informações</h4>
+            <div class="sf"><label>Telefone</label><input type="text" value="+244 939 798 979" readonly></div>
+            <div class="sf"><label>Email</label><input type="text" value="Reconecta.Residencial@gmail.com" readonly></div>
+            <div class="sf"><label>Site</label><input type="text" value="https://reconectaresidencial.com" readonly></div>
+            <div class="sf"><label>Versão ADM</label><input type="text" value="3.0 — Reconecta Residencial" readonly></div>
+          </div>
+          <div class="settings-card" style="margin-top:20px">
+            <h4>Segurança — Mudar Palavra-passe</h4>
+            <div class="sf"><label>Palavra-passe nova</label><input type="password" id="novaPass1" placeholder="Mínimo 6 caracteres" autocomplete="new-password"></div>
+            <div class="sf"><label>Confirmar palavra-passe</label><input type="password" id="novaPass2" placeholder="Repetir a palavra-passe" autocomplete="new-password"></div>
+            <div id="passMsg" style="display:none;font-size:.8rem;padding:10px 14px;border-radius:9px;margin-bottom:12px"></div>
+            <button class="save-btn" onclick="mudarPassword()" id="passBtn">Guardar nova palavra-passe</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALHE -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-left">
+        <h3 id="modalNome">—</h3>
+        <div class="modal-head-id" id="modalMeta">—</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">👤 Informações do cliente</div>
+      <div class="detail-grid" id="clienteGrid"></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">🛎️ Detalhes da reserva</div>
+      <div class="detail-grid" id="reservaGrid"></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">💳 Pagamento</div>
+      <div class="detail-grid" id="pagamentoGrid"></div>
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+        <select id="selPagEstado" style="padding:9px 13px;border:1px solid rgba(45,138,78,0.3);background:#fff;font-family:'Outfit',sans-serif;font-size:0.82rem;color:#121212;outline:none;cursor:pointer;flex:1">
+          <option value="Não pago">Não pago</option>
+          <option value="Parcialmente pago">Parcialmente pago</option>
+          <option value="Pago">Pago</option>
+        </select>
+        <input type="number" id="selPagValor" placeholder="Valor pago (Kz)" min="0" step="1000" style="padding:9px 13px;border:1px solid rgba(45,138,78,0.3);background:#fff;font-family:'Outfit',sans-serif;font-size:0.82rem;color:#121212;outline:none;flex:1">
+        <input type="text" id="selPagNotas" placeholder="Referência / comprovativo (ex: transferência #123, Multicaixa Express)" style="padding:9px 13px;border:1px solid rgba(45,138,78,0.3);background:#fff;font-family:'Outfit',sans-serif;font-size:0.82rem;color:#121212;outline:none;flex:2">
+        <button onclick="guardarPagamento(currentDetailIdx)" style="background:#2d8a4e;color:#fff;border:none;padding:9px 18px;font-family:'Outfit',sans-serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;cursor:pointer;white-space:nowrap">💾 Guardar Pagamento</button>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">📧 Email de confirmação para o cliente</div>
+      <p style="font-size:0.73rem;color:var(--czc);margin-bottom:6px">Pode editar o texto antes de enviar.</p>
+      <textarea class="email-area" id="emailBody"></textarea>
+    </div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<!-- MODAL NOVA RESERVA -->
+<div class="modal-overlay" id="modalNova" onclick="if(event.target===this)fecharNova()">
+  <div class="modal wide">
+    <div class="modal-head">
+      <div class="modal-head-left">
+        <h3>Nova Reserva Manual</h3>
+        <div class="modal-head-id">Criada pelo administrador — guardada directamente no servidor</div>
+      </div>
+      <button class="modal-close" onclick="fecharNova()">×</button>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">👤 Dados do cliente</div>
+      <div class="form-grid">
+        <div class="ff"><label>Nome completo *</label><input type="text" id="nf_nome" placeholder="Nome do hóspede"></div>
+        <div class="ff"><label>Telefone</label><input type="tel" id="nf_tel" placeholder="+244 9XX XXX XXX" oninput="calcPreco()"></div>
+        <div class="ff"><label>Email <span style="font-size:0.58rem;font-weight:300">(telefone ou email — mínimo um)</span></label><input type="email" id="nf_email" placeholder="email@exemplo.com"></div>
+        <div class="ff"><label>N.º de pessoas</label>
+          <select id="nf_pessoas">
+            <option>1 pessoa</option><option>2 pessoas</option><option>3 pessoas</option><option>4 pessoas</option><option>5 ou mais</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">🛎️ Detalhes da reserva</div>
+      <div class="form-grid">
+        <div class="ff"><label>Tipo de quarto *</label>
+          <select id="nf_tipo" onchange="calcPreco()">
+            <option value="Quarto Standard">Quarto Standard — 20 000 Kz/noite</option>
+            <option value="Quarto Superior">Quarto Superior — 25 000 Kz/noite</option>
+            <option value="Quarto Confort">Quarto Confort — 30 000 Kz/noite</option>
+            <option value="Quarto Deluxe">Quarto Deluxe — 35 000 Kz/noite</option>
+            <option value="Piscina (dia)">Piscina (dia)</option>
+            <option value="Restaurante">Restaurante</option>
+            <option value="Evento / Grupo">Evento / Grupo</option>
+          </select>
+        </div>
+        <div class="ff"><label>N.º de quartos</label>
+          <select id="nf_quartos" onchange="calcPreco()"><option>1 quarto</option><option>2 quartos</option><option>3 ou mais</option></select>
+        </div>
+        <div class="ff"><label>Check-in</label><input type="date" id="nf_ci" onchange="calcPreco()"></div>
+        <div class="ff"><label>Check-out</label><input type="date" id="nf_co" onchange="calcPreco()"></div>
+        <div class="ff"><label>Estado inicial</label>
+          <select id="nf_estado"><option value="Confirmado">Confirmado</option><option value="Pendente">Pendente</option></select>
+        </div>
+        <div class="ff"></div>
+        <div class="ff full"><label>Observações</label><textarea id="nf_obs" placeholder="Pedidos especiais, notas internas..."></textarea></div>
+      </div>
+      <div class="form-err" id="nfErr"></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">💳 Informação de Pagamento</div>
+      <div class="form-grid">
+        <div class="ff"><label>Estado do pagamento</label>
+          <select id="nf_pag_estado">
+            <option value="Não pago">Não pago</option>
+            <option value="Parcialmente pago">Parcialmente pago</option>
+            <option value="Pago">Pago</option>
+          </select>
+        </div>
+        <div class="ff"><label>Valor pago (Kz)</label>
+          <input type="number" id="nf_pag_valor" placeholder="0" min="0" step="1000">
+        </div>
+        <div class="ff full"><label>Notas de pagamento</label>
+          <input type="text" id="nf_pag_notas" placeholder="Ex: Pago via transferência, referência #12345">
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-confirm" onclick="guardarNova()" id="nfBtn">💾 Guardar Reserva</button>
+      <button style="background:var(--cr);color:var(--cz);border:none;padding:11px 20px;font-family:'Outfit',sans-serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;cursor:pointer" onclick="fecharNova()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM APAGAR -->
+<div class="modal-overlay" id="modalDel" onclick="if(event.target===this)fecharDel()">
+  <div class="confirm-box">
+    <h3>Apagar reserva?</h3>
+    <p id="delMsg">Esta acção é permanente e não pode ser desfeita.</p>
+    <div class="confirm-btns">
+      <button class="cb-no" onclick="fecharDel()">Cancelar</button>
+      <button class="cb-yes" onclick="confirmarApagar()">Apagar definitivamente</button>
+    </div>
+  </div>
+</div>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeAdmSidebar()"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL='https://oxxjlmakvprrlqpbsxdq.supabase.co';
+const SUPABASE_KEY='sb_publishable_crhEx9mSifD13pkZH1yNMA_tiHIuLIy';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const PER_PAGE=15;
+let allData=[],filteredData=[],currentPage=1;
+let pendingDelId=null;
+let currentDetailIdx=-1;
+
+const QUARTOS_DEF=[
+  {id:'standard',nome:'Quarto Standard',total:2, preco:20000},
+  {id:'superior',nome:'Quarto Superior',total:10,preco:25000},
+  {id:'confort', nome:'Quarto Confort', total:3, preco:30000},
+  {id:'deluxe',  nome:'Quarto Deluxe',  total:2, preco:35000}
+];
+
+function fmtDataHora(iso){
+  if(!iso) return '—';
+  const d=new Date(iso);
+  if(isNaN(d)) return '—';
+  return d.toLocaleString('pt-PT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function bc(s){return {confirmado:'confirmado',cancelado:'cancelado',pendente:'pendente','check-in':'checkin','check-out':'checkout'}[(s||'pendente').toLowerCase()]||'pendente';}
+function bcPag(s){const m={'pago':'pago','não pago':'nao-pago','parcialmente pago':'parcial'};return m[(s||'').toLowerCase()]||'nao-pago';}
+function precoQuarto(tipo){const t=(tipo||'').toLowerCase();if(t.includes('standard'))return 20000;if(t.includes('superior'))return 25000;if(t.includes('confort'))return 30000;if(t.includes('deluxe'))return 35000;return 0;}
+function noites(ci,co){const a=parseDataLocal(ci),b=parseDataLocal(co);if(!a||!b)return 0;return Math.max(0,Math.round((b-a)/(1000*60*60*24)));}
+
+async function guardarPagamento(idx){
+  const r=filteredData[idx];if(!r)return;
+  const estado=document.getElementById('selPagEstado').value;
+  const valor=document.getElementById('selPagValor').value||'0';
+  const notas=document.getElementById('selPagNotas').value.trim()||'—';
+  try{
+    const {error}=await sb.from('reservas').update({pagamento_estado:estado,pagamento_valor:valor,pagamento_notas:notas}).eq('id',r.id);
+    if(error) throw error;
+    r.pagamento_estado=estado;r.pagamento_valor=valor;r.pagamento_notas=notas;
+    const orig=allData.find(a=>a.id===r.id);
+    if(orig){orig.pagamento_estado=estado;orig.pagamento_valor=valor;orig.pagamento_notas=notas;}
+    openDetail(idx);
+    renderTable();renderHospedes();
+    showToast('Pagamento guardado!','ok');
+  }catch(e){showToast('Erro ao guardar pagamento.','err');}
+}
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(type?' '+type:'');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+function parseDataLocal(str){
+  if(!str||str==='—'||str==='') return null;
+  const s=String(str).trim();
+  // YYYY-MM-DD
+  let m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m) return new Date(+m[1],+m[2]-1,+m[3]);
+  // DD/MM/YYYY
+  m=s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if(m) return new Date(+m[3],+m[2]-1,+m[1]);
+  // Formato Sheets: "Fri May 01 2026 00:00:00 GMT+0100 ..."
+  const d=new Date(s);
+  if(!isNaN(d)) return new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  return null;
+}
+// Formatar data para humanos: DD/MM/AAAA
+function fmtData(str){
+  if(!str||str==='—'||str==='') return '—';
+  const d=parseDataLocal(str);
+  if(!d) return str; // devolver original se não parsear
+  return d.toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
+// ── PDF de confirmação de reserva (gerado no browser, sem servidor) ──
+function gerarPDFReserva(idx){
+  const r=filteredData[idx]; if(!r) return;
+  if(!window.jspdf){ showToast('Biblioteca de PDF ainda a carregar, tente novamente.','err'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const nNoites=noites(r.checkin,r.checkout);
+  const pUnit=precoQuarto(r.tipo);
+  const nqRaw=(r.quartos||'1'); const nq=nqRaw.includes('3 ou mais')?3:(parseInt(nqRaw.replace(/\D/g,''))||1);
+  const total=pUnit*nNoites*nq;
+
+  // Cabeçalho
+  doc.setFillColor(26,58,42);
+  doc.rect(0,0,210,32,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold'); doc.setFontSize(18);
+  doc.text('Reconecta Residencial', 14, 15);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10);
+  doc.text("Vila Verde, N'dalatando · Cuanza Norte, Angola", 14, 22);
+  doc.text('+244 939 798 979', 14, 27);
+
+  doc.setTextColor(20,20,20);
+  doc.setFont('helvetica','bold'); doc.setFontSize(14);
+  doc.text('Confirmação de Reserva', 14, 44);
+  doc.setDrawColor(200,200,200); doc.line(14,48,196,48);
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text('Código: ' + (r.codigo||r.id||'—'), 14, 57);
+  doc.setFont('helvetica','normal');
+  doc.text('Estado: ' + (r.estado||'Pendente'), 130, 57);
+
+  const linhas = [
+    ['Nome do hóspede', r.nome||'—'],
+    ['Email', r.email||'—'],
+    ['Telefone', r.telefone||'—'],
+    ['Tipo de quarto', r.tipo||'—'],
+    ['Check-in', fmtData(r.checkin)],
+    ['Check-out', fmtData(r.checkout)],
+    ['Noites', String(nNoites||'—')],
+    ['N.º de pessoas', r.pessoas||'—'],
+    ['N.º de quartos', r.quartos||'—'],
+    ['Observações', r.observacoes&&r.observacoes!=='—'?r.observacoes:'Sem observações']
+  ];
+  let y=68;
+  doc.setFontSize(10);
+  linhas.forEach(([label,val])=>{
+    doc.setFont('helvetica','bold'); doc.text(label+':', 14, y);
+    doc.setFont('helvetica','normal');
+    const wrapped=doc.splitTextToSize(String(val),110);
+    doc.text(wrapped, 70, y);
+    y += 7*wrapped.length;
+  });
+
+  y += 4; doc.line(14,y,196,y); y+=10;
+  if(total>0){
+    doc.setFont('helvetica','bold'); doc.setFontSize(12);
+    doc.text('Valor total estimado: ' + total.toLocaleString('pt-PT') + ' Kz', 14, y);
+    y += 8;
+  }
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,90,90);
+  doc.text('Pagamento: verificação manual (transferência, Multicaixa Express ou numerário no check-in).', 14, y);
+  y += 12;
+
+  doc.setFontSize(8); doc.setTextColor(140,140,140);
+  doc.text('Documento gerado automaticamente pelo Reconecta Residencial. Em caso de dúvida contacte +244 939 798 979.', 14, 285);
+
+  doc.save('Reserva-' + (r.codigo||r.id||'confirmacao') + '.pdf');
+}
+
+
+// ── Imprimir uma reserva (ficha individual) ──
+function imprimirReserva(idx){
+  const r=filteredData[idx]; if(!r) return;
+  const nNoites=noites(r.checkin,r.checkout);
+  const pUnit=precoQuarto(r.tipo);
+  const nqRaw=(r.quartos||'1'); const nq=nqRaw.includes('3 ou mais')?3:(parseInt(nqRaw.replace(/\D/g,''))||1);
+  const total=pUnit*nNoites*nq;
+  const area=document.getElementById('printArea'); if(!area) return;
+  area.innerHTML=`
+    <div class="print-card">
+      <h1>Reconecta Residencial</h1>
+      <p class="print-sub">N'dalatando · Cuanza Norte, Angola · +244 939 798 979</p>
+      <h2>Ficha de Reserva</h2>
+      <p class="print-codigo">Código: <strong>${esc(r.codigo||r.id||'—')}</strong> &nbsp;·&nbsp; Estado: <strong>${esc(r.estado||'Pendente')}</strong></p>
+      <table>
+        <tr><td>Nome</td><td>${esc(r.nome||'—')}</td></tr>
+        <tr><td>Email</td><td>${esc(r.email||'—')}</td></tr>
+        <tr><td>Telefone</td><td>${esc(r.telefone||'—')}</td></tr>
+        <tr><td>Tipo de quarto</td><td>${esc(r.tipo||'—')}</td></tr>
+        <tr><td>Check-in</td><td>${fmtData(r.checkin)}</td></tr>
+        <tr><td>Check-out</td><td>${fmtData(r.checkout)}</td></tr>
+        <tr><td>Noites</td><td>${nNoites||'—'}</td></tr>
+        <tr><td>Pessoas</td><td>${esc(r.pessoas||'—')}</td></tr>
+        <tr><td>Quartos</td><td>${esc(r.quartos||'—')}</td></tr>
+        <tr><td>Pagamento</td><td>${esc(r.pagamento_estado||'Não pago')}${total>0?' — Total estimado: '+total.toLocaleString('pt-PT')+' Kz':''}</td></tr>
+        <tr><td>Observações</td><td>${esc(r.observacoes&&r.observacoes!=='—'?r.observacoes:'Sem observações')}</td></tr>
+      </table>
+      <p class="print-nota">Documento gerado pelo painel administrativo em ${new Date().toLocaleString('pt-PT')}.</p>
+    </div>`;
+  window.print();
+}
+
+// ── Imprimir histórico completo (respeita pesquisa/filtro activos) ──
+function imprimirHistorico(){
+  const area=document.getElementById('printArea'); if(!area) return;
+  const linhas=filteredData.map(r=>`
+    <tr>
+      <td>${esc(r.codigo||r.id||'—')}</td>
+      <td>${esc(r.nome||'—')}</td>
+      <td>${esc(r.tipo||'—')}</td>
+      <td>${fmtData(r.checkin)}</td>
+      <td>${fmtData(r.checkout)}</td>
+      <td>${esc(r.estado||'Pendente')}</td>
+      <td>${esc(r.pagamento_estado||'Não pago')}</td>
+    </tr>`).join('');
+  area.innerHTML=`
+    <div class="print-card">
+      <h1>Reconecta Residencial</h1>
+      <p class="print-sub">Histórico de Reservas — gerado em ${new Date().toLocaleString('pt-PT')} · ${filteredData.length} registo(s)</p>
+      <table class="print-hist">
+        <thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Check-in</th><th>Check-out</th><th>Estado</th><th>Pagamento</th></tr></thead>
+        <tbody>${linhas || '<tr><td colspan="7">Sem reservas para os filtros actuais.</td></tr>'}</tbody>
+      </table>
+    </div>`;
+  window.print();
+}
+
+// Login real via Supabase Auth — usa o EMAIL e password que criaste em
+// Authentication → Users. A sessão fica guardada automaticamente pelo
+// supabase-js (não precisamos de gerir isso à mão).
+async function doLogin(){
+  const u=document.getElementById('lUser').value.trim(),p=document.getElementById('lPass').value;
+  const btn=document.querySelector('.login-btn');
+  const errEl=document.getElementById('loginErr');
+  errEl.style.display='none';
+  if(btn){btn.disabled=true;btn.textContent='A verificar...';}
+  try{
+    const {data,error}=await sb.auth.signInWithPassword({email:u,password:p});
+    if(error) throw error;
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('app').style.display='block';
+    setDate(); loadReservas();
+  }catch(e){
+    errEl.textContent = e.message==='Invalid login credentials'
+      ? 'Email ou palavra-passe incorrectos.'
+      : ('Não foi possível ligar ao servidor: '+e.message);
+    errEl.style.display='block';
+    document.getElementById('lPass').value='';
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Entrar no Painel';}
+  }
+}
+// ── Mudar palavra-passe (painel Definições) ──
+async function mudarPassword(){
+  const p1=document.getElementById('novaPass1').value;
+  const p2=document.getElementById('novaPass2').value;
+  const msgEl=document.getElementById('passMsg');
+  const btn=document.getElementById('passBtn');
+  function mostrarMsg(texto,tipo){
+    msgEl.textContent=texto;
+    msgEl.style.display='block';
+    msgEl.style.background = tipo==='ok' ? 'rgba(45,138,78,0.1)' : 'rgba(192,57,43,0.1)';
+    msgEl.style.color = tipo==='ok' ? 'var(--ok)' : 'var(--err)';
+  }
+  if(p1.length<6){ mostrarMsg('A palavra-passe tem de ter pelo menos 6 caracteres.','err'); return; }
+  if(p1!==p2){ mostrarMsg('As duas palavras-passe não coincidem.','err'); return; }
+  btn.disabled=true; btn.textContent='A guardar...';
+  try{
+    const {error}=await sb.auth.updateUser({password:p1});
+    if(error) throw error;
+    mostrarMsg('Palavra-passe alterada com sucesso!','ok');
+    document.getElementById('novaPass1').value='';
+    document.getElementById('novaPass2').value='';
+    showToast('Palavra-passe actualizada ✓','ok');
+  }catch(e){
+    mostrarMsg('Erro: '+e.message,'err');
+  }finally{
+    btn.disabled=false; btn.textContent='Guardar nova palavra-passe';
+  }
+}
+
+async function doLogout(){
+  await sb.auth.signOut();
+  document.getElementById('app').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('lPass').value='';
+  document.getElementById('loginErr').style.display='none';
+}
+async function verificarSessao(){
+  // supabase-js guarda a sessão sozinho (localStorage) — só perguntamos se ainda é válida.
+  const {data:{session}}=await sb.auth.getSession();
+  if(session){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('app').style.display='block';
+    setDate(); loadReservas();
+  }
+}
+function setDate(){document.getElementById('topbarDate').textContent=new Date().toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+
+// ── Tabs ──
+function showTab(tab,el){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(el) el.classList.add('active');
+  document.getElementById('topbarTitle').textContent={dashboard:'Dashboard',quartos:'Quartos',reservas:'Reservas',config:'Configurações'}[tab]||tab;
+}
+function toggleAdmSidebar(){document.querySelector('.sidebar').classList.toggle('mob-open');document.getElementById('sidebarOverlay').classList.toggle('show');}
+function closeAdmSidebar(){document.querySelector('.sidebar').classList.remove('mob-open');document.getElementById('sidebarOverlay').classList.remove('show');}
+document.querySelectorAll('.sb-link').forEach(l=>l.addEventListener('click',closeAdmSidebar));
+
+// ── Load ──
+async function loadReservas(tentativa=1){
+  const refreshBtn=document.querySelector('.refresh-btn');
+  if(refreshBtn&&tentativa===1){refreshBtn.disabled=true;refreshBtn.style.opacity='0.5';}
+  ['tableArea','recentList','tipoBars','hospedesTable','todayIn','todayOut'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<div class="loading"><div class="spinner"></div>A carregar...</div>';});
+  document.getElementById('quartosGrid').innerHTML='<div class="loading" style="grid-column:1/-1"><div class="spinner"></div>A carregar...</div>';
+  try{
+    // Auto-cancelar reservas Pendentes há mais de 3h (substitui o antigo
+    // gatilho horário do Apps Script — corre sempre que o admin abre o painel).
+    const limite=new Date(Date.now()-3*60*60*1000).toISOString();
+    await sb.from('reservas').update({estado:'Cancelado'}).eq('estado','Pendente').lt('criado_em',limite);
+
+    const {data,error}=await sb.from('reservas').select('*').order('criado_em',{ascending:false});
+    if(error) throw error;
+    allData=data||[];
+    filteredData=[...allData];
+    renderStats(); renderDashboard(); renderTable(); renderQuartos(); renderHospedes();
+    const now=new Date();
+    const fmt=now.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+    const el=document.getElementById('lastUpdate');
+    if(el) el.textContent='Actualizado às '+fmt;
+    showToast('Dados actualizados ✓','ok');
+    const rb2=document.querySelector('.refresh-btn');if(rb2){rb2.disabled=false;rb2.style.opacity='';}
+  }catch(e){
+    if(tentativa<3){
+      setTimeout(()=>loadReservas(tentativa+1), 2000);
+      document.getElementById('tableArea').innerHTML=`<div class="no-data"><p>A tentar ligação... (${tentativa}/3)</p></div>`;
+    } else {
+      document.getElementById('tableArea').innerHTML='<div class="no-data"><p>⚠️ Sem ligação ao servidor. Verifica a ligação à internet e clica Actualizar.</p></div>';
+      document.getElementById('recentList').innerHTML='<div class="no-data"><p>Sem dados.</p></div>';
+      showToast('Erro de ligação ao servidor.','err');
+      const rb3=document.querySelector('.refresh-btn');if(rb3){rb3.disabled=false;rb3.style.opacity='';}
+    }
+  }
+}
+
+// ── Stats ──
+function renderStats(){
+  document.getElementById('sTot').textContent=allData.length;
+  document.getElementById('sConf').textContent=allData.filter(r=>(r.estado||'').toLowerCase()==='confirmado').length;
+  document.getElementById('sPend').textContent=allData.filter(r=>(r.estado||'pendente').toLowerCase()==='pendente').length;
+  document.getElementById('sCheckin').textContent=allData.filter(r=>(r.estado||'').toLowerCase()==='check-in').length;
+  document.getElementById('sCanc').textContent=allData.filter(r=>(r.estado||'').toLowerCase()==='cancelado').length;
+}
+
+// ── Dashboard ──
+function renderDashboard(){
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const notCancelled=r=>(r.estado||'').toLowerCase()!=='cancelado';
+
+  // Check-ins hoje
+  const ci=allData.filter(r=>{if(!notCancelled(r))return false;const d=parseDataLocal(r.checkin);if(!d)return false;const dd=new Date(d.getFullYear(),d.getMonth(),d.getDate());return dd.getTime()===hoje.getTime();});
+  document.getElementById('todayIn').innerHTML=ci.length
+    ?ci.map(r=>`<div class="titem" onclick="abrirPorId('${r.id}')"><span class="badge ${bc(r.estado)}">${esc(r.estado||'Pendente')}</span><div><strong>${esc(r.nome||'—')}</strong><br><span style="font-size:0.72rem;color:var(--czc)">${esc(r.tipo||'—')} · ${esc(r.quartos||'—')}</span></div></div>`).join('')
+    :'<div class="tempty">Nenhum check-in hoje</div>';
+
+  // Check-outs hoje
+  const co=allData.filter(r=>{if(!notCancelled(r))return false;const d=parseDataLocal(r.checkout);if(!d)return false;const dd=new Date(d.getFullYear(),d.getMonth(),d.getDate());return dd.getTime()===hoje.getTime();});
+  document.getElementById('todayOut').innerHTML=co.length
+    ?co.map(r=>`<div class="titem" onclick="abrirPorId('${r.id}')"><span class="badge ${bc(r.estado)}">${esc(r.estado||'Pendente')}</span><div><strong>${esc(r.nome||'—')}</strong><br><span style="font-size:0.72rem;color:var(--czc)">${esc(r.tipo||'—')} · Saída hoje</span></div></div>`).join('')
+    :'<div class="tempty">Nenhum check-out hoje</div>';
+
+  // Recentes
+  document.getElementById('recentList').innerHTML=allData.slice(0,8).map(r=>`<div class="recent-item" onclick="abrirPorId('${r.id}')">
+    <div class="ri-dot" style="background:${r.estado==='Confirmado'?'var(--ok)':r.estado==='Cancelado'?'var(--err)':r.estado==='Check-in'?'#2b6cb0':r.estado==='Check-out'?'#5a5a5a':'var(--warn)'}"></div>
+    <div><div class="ri-name">${esc(r.nome||'—')}</div>
+    <div class="ri-meta">${esc(r.tipo||'—')} · ${fmtData(r.checkin)} · <b style="color:var(--o)">${esc(r.estado||'Pendente')}</b></div></div>
+  </div>`).join('')||'<div class="no-data"><p>Sem reservas ainda.</p></div>';
+
+  // Tipos
+  const tipos={};
+  allData.forEach(r=>{const t=r.tipo||'Sem tipo';tipos[t]=(tipos[t]||0)+1;});
+  const max=Math.max(...Object.values(tipos),1);
+  document.getElementById('tipoBars').innerHTML=Object.entries(tipos).sort((a,b)=>b[1]-a[1]).slice(0,6)
+    .map(([t,n])=>`<div class="tipo-row"><div class="tipo-label">${esc(t)}</div><div class="tipo-track"><div class="tipo-fill" style="width:${Math.round(n/max*100)}%"></div></div><div class="tipo-count">${n}</div></div>`).join('')
+    ||'<p style="font-size:0.8rem;color:var(--czc)">Sem dados</p>';
+}
+
+// ── Quartos: ocupação ──
+function calcOcupacao(){
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const ocp={standard:0,superior:0,confort:0,deluxe:0};
+
+  allData.forEach(r=>{
+    // CONFIRMADAS ou já em CHECK-IN (hóspede no estabelecimento)
+    const est=(r.estado||'').toLowerCase();
+    if(est!=='confirmado'&&est!=='check-in') return;
+
+    // Datas válidas obrigatórias
+    const ci=parseDataLocal(r.checkin);
+    const co=parseDataLocal(r.checkout);
+    if(!ci||!co) return;
+
+    const ciD=new Date(ci.getFullYear(),ci.getMonth(),ci.getDate());
+    const coD=new Date(co.getFullYear(),co.getMonth(),co.getDate());
+
+    // Check-in já feito ocupa o quarto mesmo que a data de entrada teórica ainda não tenha chegado hoje
+    if(est==='check-in'){ if(coD<=hoje) return; }
+    else if(ciD>hoje||coD<=hoje) return;
+
+    const t=(r.tipo||'').toLowerCase();
+    // Extrair número de quartos: "1 quarto"→1, "2 quartos"→2, "3 ou mais"→3
+    const nqStr=(r.quartos||'1 quarto');
+    const nq=nqStr.toLowerCase().includes('3 ou mais')?3:(parseInt(nqStr)||1);
+
+    if(t.includes('standard'))      ocp.standard+=nq;
+    else if(t.includes('superior')) ocp.superior+=nq;
+    else if(t.includes('confort'))  ocp.confort +=nq;
+    else if(t.includes('deluxe'))   ocp.deluxe  +=nq;
+  });
+
+  // Garantir que nunca passa do total
+  QUARTOS_DEF.forEach(q=>{ ocp[q.id]=Math.min(ocp[q.id],q.total); });
+  return ocp;
+}
+
+function renderQuartos(){
+  const ocp=calcOcupacao();
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+
+  document.getElementById('quartosGrid').innerHTML=QUARTOS_DEF.map(q=>{
+    const ocupados=ocp[q.id];
+    const livres=q.total-ocupados;
+    const pct=q.total>0?Math.round(ocupados/q.total*100):0;
+    const cls=livres===0?'cheio':livres<=1?'quase':'';
+    const fillCls=livres===0?'cheio':livres<=1?'quase':'';
+
+    // Hóspedes actuais deste tipo
+    const actuais=allData.filter(r=>{
+      if((r.estado||'').toLowerCase()!=='confirmado') return false;
+      if(!(r.tipo||'').toLowerCase().includes(q.id)) return false;
+      const ci=parseDataLocal(r.checkin);
+      const co=parseDataLocal(r.checkout);
+      if(!ci||!co) return false;
+      const ciD=new Date(ci.getFullYear(),ci.getMonth(),ci.getDate());
+      const coD=new Date(co.getFullYear(),co.getMonth(),co.getDate());
+      return ciD<=hoje&&coD>hoje;
+    });
+
+    const hospedesHtml=actuais.length
+      ?`<div style="margin-top:10px;border-top:1px solid rgba(0,0,0,0.07);padding-top:8px">${
+        actuais.map(r=>`<div style="font-size:0.7rem;padding:3px 0;border-bottom:1px solid rgba(0,0,0,0.04);cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="abrirPorId('${r.id}')">
+          <span style="font-weight:500">${esc(r.nome||'—')}</span>
+          <span style="color:var(--czc)">saída ${fmtData(r.checkout)}</span>
+        </div>`).join('')
+      }</div>`:'' ;
+
+    return `<div class="qcard ${cls}">
+      <div class="qcard-nome">${esc(q.nome)}</div>
+      <div style="display:flex;align-items:flex-end;gap:6px;margin:4px 0 2px">
+        <div class="qcard-num">${livres}</div>
+        <div style="font-size:0.85rem;color:var(--czc);padding-bottom:6px">/ ${q.total} disponíve${livres!==1?'is':'l'}</div>
+      </div>
+      <div class="qcard-bar"><div class="qcard-fill ${fillCls}" style="width:${pct}%"></div></div>
+      <div class="qcard-ocp" style="margin-top:5px">${ocupados} ocupado${ocupados!==1?'s':''} · ${q.preco.toLocaleString('pt-PT')} Kz/noite</div>
+      <div class="qcard-row" style="margin-top:10px">
+        <button class="qcard-btn-sm disp" onclick="irParaReservasTipoEstado('${esc(q.nome)}','')">
+          ${livres} livre${livres!==1?'s':''}
+        </button>
+        <button class="qcard-btn-sm ocp" onclick="irParaReservasTipoEstado('${esc(q.nome)}','confirmado')">
+          ${ocupados} confirmado${ocupados!==1?'s':''}
+        </button>
+        ${(()=>{const np=allData.filter(r=>(r.estado||'pendente').toLowerCase()==='pendente'&&(r.tipo||'').toLowerCase().includes(q.id)).length;return `<button class="qcard-btn-sm" style="background:rgba(212,134,11,0.12);color:var(--warn)" onclick="irParaReservasTipoEstado('${esc(q.nome)}','pendente')">${np} pendente${np!==1?'s':''}</button>`;})()}
+      </div>
+      ${hospedesHtml}
+    </div>`;
+  }).join('');
+}
+
+// ── Hóspedes em curso ──
+function renderHospedes(){
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const actuais=allData.filter(r=>{
+    if((r.estado||'').toLowerCase()!=='confirmado') return false;
+    const ci=parseDataLocal(r.checkin), co=parseDataLocal(r.checkout);
+    if(!ci||!co) return false;
+    const ciD=new Date(ci); ciD.setHours(0,0,0,0);
+    const coD=new Date(co); coD.setHours(0,0,0,0);
+    return ciD<=hoje&&coD>hoje;
+  });
+  const el=document.getElementById('hospedesTable');
+  if(!actuais.length){el.innerHTML='<div class="no-data"><p>Sem hóspedes confirmados actualmente em curso.</p></div>';return;}
+  el.innerHTML=`<div style="overflow-x:auto"><table>
+    <thead><tr><th>Nome</th><th>Tipo</th><th>Check-in</th><th>Check-out</th><th>Quartos</th><th>Pessoas</th><th>Contacto</th><th></th></tr></thead>
+    <tbody>${actuais.map(r=>`<tr>
+      <td><strong style="font-weight:500">${esc(r.nome||'—')}</strong></td>
+      <td style="font-size:0.78rem">${esc(r.tipo||'—')}</td>
+      <td style="font-size:0.78rem">${fmtData(r.checkin)}</td>
+      <td style="font-size:0.78rem">${fmtData(r.checkout)}</td>
+      <td style="font-size:0.78rem;text-align:center">${esc(r.quartos||'—')}</td>
+      <td style="font-size:0.78rem;text-align:center">${esc(r.pessoas||'—')}</td>
+      <td style="font-size:0.78rem"><a href="tel:${esc(r.telefone||'')}" style="color:var(--o)">${esc(r.telefone||'—')}</a></td>
+      <td><button class="action-btn" onclick="abrirPorId('${r.id}')">Ver</button></td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+// ── Tabela ──
+function abrirPorId(id){
+  const idx=filteredData.findIndex(r=>r.id===id);
+  if(idx>=0){showTab('reservas',document.querySelectorAll('.sb-link')[2]);openDetail(idx);}
+  else{filteredData=[...allData];renderTable();const i=filteredData.findIndex(r=>r.id===id);if(i>=0) openDetail(i);}
+}
+function renderTable(){
+  if(!filteredData.length){document.getElementById('tableArea').innerHTML='<div class="no-data"><p>Nenhum resultado.</p></div>';document.getElementById('paginationBar').style.display='none';return;}
+  const total=filteredData.length, pages=Math.ceil(total/PER_PAGE);
+  if(currentPage>pages) currentPage=1;
+  const start=(currentPage-1)*PER_PAGE, slice=filteredData.slice(start,start+PER_PAGE);
+  document.getElementById('tableArea').innerHTML=`<div style="overflow-x:auto"><table>
+    <thead><tr><th>Código</th><th>Nome</th><th>Email / Telefone</th><th>Tipo</th><th>Check-in</th><th>Check-out</th><th>Pess.</th><th>Estado</th><th>Data</th><th colspan="3">Acções</th></tr></thead>
+    <tbody>${slice.map((r,i)=>`<tr>
+      <td style="color:var(--czc);font-size:0.75rem;font-weight:600">${esc(r.codigo||r.id||'—')}</td>
+      <td><strong style="font-weight:500">${esc(r.nome||'—')}</strong></td>
+      <td style="font-size:0.78rem"><div>${esc(r.email||'—')}</div><div style="color:var(--czc)">${esc(r.telefone||'—')}</div></td>
+      <td style="font-size:0.78rem">${esc(r.tipo||'—')}</td>
+      <td style="font-size:0.78rem">${fmtData(r.checkin)}</td>
+      <td style="font-size:0.78rem">${fmtData(r.checkout)}</td>
+      <td style="font-size:0.78rem;text-align:center">${esc(r.pessoas||'—')}</td>
+      <td><span class="badge ${bc(r.estado)}">${esc(r.estado||'Pendente')}</span></td>
+      <td style="font-size:0.75rem;color:var(--czc)">${esc(fmtDataHora(r.criado_em))}</td>
+      <td><button class="action-btn" onclick="openDetail(${start+i})">Ver</button></td>
+      <td><button class="action-btn" onclick="gerarPDFReserva(${start+i})" title="Descarregar PDF de confirmação">PDF</button></td>
+      <td><button class="action-btn del" onclick="pedirApagar('${r.id}',${start+i})">Apagar</button></td>
+    </tr>`).join('')}</tbody></table></div>`;
+  document.getElementById('paginationBar').style.display='flex';
+  document.getElementById('pagInfo').textContent=`${start+1}–${Math.min(start+PER_PAGE,total)} de ${total}`;
+  document.getElementById('pagBtns').innerHTML=
+    `<button class="pag-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`+
+    Array.from({length:pages},(_,i)=>`<button class="pag-btn${i+1===currentPage?' active':''}" onclick="goPage(${i+1})">${i+1}</button>`).join('')+
+    `<button class="pag-btn" onclick="goPage(${currentPage+1})" ${currentPage===pages?'disabled':''}>›</button>`;
+}
+function goPage(p){const pages=Math.ceil(filteredData.length/PER_PAGE);if(p<1||p>pages)return;currentPage=p;renderTable();}
+function filterTable(q){
+  const rawS=document.getElementById('statusFilter').value;
+  const s=rawS.toLowerCase();
+  q=(q||'').toLowerCase();
+  filteredData=allData.filter(r=>{
+    const matchQ=!q||(r.nome||'').toLowerCase().includes(q)||(r.email||'').toLowerCase().includes(q)||(r.telefone||'').toLowerCase().includes(q)||(r.tipo||'').toLowerCase().includes(q)||(r.codigo||'').toLowerCase().includes(q);
+    const matchS=!s||((r.estado||'pendente').toLowerCase()===s);
+    return matchQ&&matchS;
+  });
+  currentPage=1;renderTable();
+}
+function filterStatus(v){
+  // Garante que o select fica com o valor correcto e filtra
+  document.getElementById('statusFilter').value=v||'';
+  filterTable(document.getElementById('searchInput').value||'');
+}
+
+function irParaReservasTipo(tipoNome){
+  showTab('reservas',document.querySelectorAll('.sb-link')[2]);
+  document.getElementById('searchInput').value=tipoNome;
+  document.getElementById('statusFilter').value='';
+  filterTable(tipoNome);
+}
+function irParaReservasTipoEstado(tipoNome,estado){
+  showTab('reservas',document.querySelectorAll('.sb-link')[2]);
+  document.getElementById('searchInput').value=tipoNome;
+  // Capitalizar para coincidir com os values do select: Confirmado, Pendente, Cancelado
+  const estadoCap=estado?estado.charAt(0).toUpperCase()+estado.slice(1).toLowerCase():'';
+  document.getElementById('statusFilter').value=estadoCap;
+  filterTable(tipoNome);
+}
+function irParaReservasEstado(estado){
+  showTab('reservas',document.querySelectorAll('.sb-link')[2]);
+  document.getElementById('searchInput').value='';
+  const estadoCap=estado?estado.charAt(0).toUpperCase()+estado.slice(1).toLowerCase():'';
+  document.getElementById('statusFilter').value=estadoCap;
+  filterTable('');
+}
+
+// ── Detalhe ──
+function openDetail(idx){
+  const r=filteredData[idx];if(!r)return;
+  currentDetailIdx=idx;
+  document.getElementById('modalNome').textContent=r.nome||'Sem nome';
+  document.getElementById('modalMeta').textContent='Reserva '+(r.codigo||r.id||'—')+' · Recebida em '+fmtDataHora(r.criado_em);
+  document.getElementById('clienteGrid').innerHTML=`
+    <div class="detail-item"><div class="detail-lb">Nome completo</div><div class="detail-val">${esc(r.nome||'—')}</div></div>
+    <div class="detail-item"><div class="detail-lb">Email</div><div class="detail-val"><a href="mailto:${esc(r.email||'')}">${esc(r.email||'—')}</a></div></div>
+    <div class="detail-item"><div class="detail-lb">Telefone</div><div class="detail-val"><a href="tel:${esc(r.telefone||'')}">${esc(r.telefone||'—')}</a></div></div>
+    <div class="detail-item"><div class="detail-lb">Estado actual</div><div class="detail-val"><span class="badge ${bc(r.estado)}">${esc(r.estado||'Pendente')}</span></div></div>`;
+  document.getElementById('reservaGrid').innerHTML=`
+    <div class="detail-item"><div class="detail-lb">Tipo de reserva</div><div class="detail-val">${esc(r.tipo||'—')}</div></div>
+    <div class="detail-item"><div class="detail-lb">N.º de pessoas</div><div class="detail-val">${esc(r.pessoas||'—')}</div></div>
+    <div class="detail-item"><div class="detail-lb">Check-in</div><div class="detail-val">${fmtData(r.checkin)}</div></div>
+    <div class="detail-item"><div class="detail-lb">Check-out</div><div class="detail-val">${fmtData(r.checkout)}</div></div>
+    <div class="detail-item"><div class="detail-lb">N.º de quartos</div><div class="detail-val">${esc(r.quartos||'—')}</div></div>
+    <div class="detail-item full"><div class="detail-lb">Observações</div><div class="detail-val">${esc(r.observacoes||'Sem observações')}</div></div>`;
+  document.getElementById('emailBody').value=gerarEmail(r);
+
+  // Pagamento
+  const pagEstado=r.pagamento_estado||'Não pago';
+  const pagValor=Number(r.pagamento_valor||0);
+  const pagNotas=r.pagamento_notas||'—';
+  const nNoites2=noites(r.checkin,r.checkout);
+  const pUnit2=precoQuarto(r.tipo);
+  const nqRaw2=(r.quartos||'1');const nq2=nqRaw2.includes('3 ou mais')?3:(parseInt(nqRaw2.replace(/\D/g,''))||1);
+  const totalEst=pUnit2*nNoites2*nq2;
+  const emFalta=Math.max(0,totalEst-pagValor);
+
+  document.getElementById('pagamentoGrid').innerHTML=`
+    <div class="detail-item"><div class="detail-lb">Estado</div><div class="detail-val"><span class="badge ${bcPag(pagEstado)}">${esc(pagEstado)}</span></div></div>
+    <div class="detail-item"><div class="detail-lb">Valor pago</div><div class="detail-val" style="color:#2d8a4e;font-weight:600">${pagValor.toLocaleString('pt-PT')} Kz</div></div>
+    ${totalEst>0?`<div class="detail-item"><div class="detail-lb">Total estimado</div><div class="detail-val" style="font-weight:600">${totalEst.toLocaleString('pt-PT')} Kz</div></div>
+    <div class="detail-item"><div class="detail-lb">Em falta</div><div class="detail-val" style="color:${emFalta>0?'#c0392b':'#2d8a4e'};font-weight:600">${emFalta.toLocaleString('pt-PT')} Kz</div></div>`:''}
+    <div class="detail-item full"><div class="detail-lb">Notas</div><div class="detail-val">${esc(pagNotas)}</div></div>`;
+
+  // Preencher selects de pagamento
+  document.getElementById('selPagEstado').value=pagEstado;
+  document.getElementById('selPagValor').value=pagValor||'';
+  document.getElementById('selPagNotas').value=pagNotas==='—'?'':pagNotas;
+  const tel=(r.telefone||'244939798979').replace(/\D/g,'');
+  const wa=encodeURIComponent(`Olá ${r.nome||''}! A sua reserva no Reconecta Residencial (${r.codigo||r.id||''}) foi confirmada.\n\n📅 Check-in: ${fmtData(r.checkin)}\n📅 Check-out: ${fmtData(r.checkout)}\n🛎️ Tipo: ${r.tipo||'—'}\n\nObrigado pela preferência! +244 939 798 979`);
+  const est=(r.estado||'pendente').toLowerCase();
+  // Botão de transição de estado depende do estado actual: Pendente→Confirmar, Confirmado→Check-in, Check-in→Check-out
+  let btnTransicao='';
+  if(est==='pendente') btnTransicao=`<button class="btn-confirm" onclick="updateStatus(${idx},'Confirmado')">✓ Confirmar</button>`;
+  else if(est==='confirmado') btnTransicao=`<button class="btn-confirm" onclick="updateStatus(${idx},'Check-in')">🔑 Fazer Check-in</button>`;
+  else if(est==='check-in') btnTransicao=`<button class="btn-confirm" onclick="updateStatus(${idx},'Check-out')">🚪 Fazer Check-out</button>`;
+  const btnCancelar=(est==='check-out'||est==='cancelado')?'':`<button class="btn-cancel-res" onclick="updateStatus(${idx},'Cancelado')">✗ Cancelar</button>`;
+  document.getElementById('modalActions').innerHTML=`
+    ${btnTransicao}
+    <button class="btn-email" onclick="gerarPDFReserva(${idx})">
+      <svg viewBox="0 0 24 24"><path d="M6 2c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z"/></svg>PDF
+    </button>
+    <button class="btn-email" onclick="imprimirReserva(${idx})" style="background:#555">
+      <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Imprimir
+    </button>
+    <button class="btn-email" onclick="enviarEmail(${idx})">
+      <svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>Enviar Email
+    </button>
+    <a class="btn-wa" href="https://wa.me/${tel}?text=${wa}" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>WhatsApp
+    </a>
+    ${btnCancelar}
+    <button class="btn-delete" onclick="pedirApagar('${r.id}',${idx})">🗑 Apagar</button>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
+
+function gerarEmail(r){
+  return `Olá ${r.nome||''},\n\nA sua reserva no Reconecta Residencial foi confirmada!\n\n━━━━━━━━━━━━━━━━━━━━\nDETALHES DA RESERVA\n━━━━━━━━━━━━━━━━━━━━\nCódigo: ${r.codigo||r.id||'—'}\nTipo: ${r.tipo||'—'}\nCheck-in: ${fmtData(r.checkin)}\nCheck-out: ${fmtData(r.checkout)}\nN.º de pessoas: ${r.pessoas||'—'}\nN.º de quartos: ${r.quartos||'—'}${r.observacoes&&r.observacoes!=='—'?'\nObservações: '+r.observacoes:''}\n━━━━━━━━━━━━━━━━━━━━\n\nPara qualquer questão contacte-nos:\n📞 +244 939 798 979\n📍 Vila Verde, N'dalatando, Angola\n\nObrigado pela preferência!\nReconecta Residencial`;
+}
+function enviarEmail(idx){
+  const r=filteredData[idx];
+  if(!r||!r.email){showToast('Este cliente não tem email registado.','err');return;}
+  const sub=encodeURIComponent('Confirmação de Reserva — Reconecta Residencial · '+(r.codigo||r.id||''));
+  const body=encodeURIComponent(document.getElementById('emailBody').value);
+  window.open(`mailto:${r.email}?subject=${sub}&body=${body}`,'_blank');
+  showToast('A abrir o seu cliente de email...','ok');
+}
+
+// ── Actualizar estado ──
+async function updateStatus(idx,status){
+  const r=filteredData[idx];if(!r)return;
+  if(r._upd)return;r._upd=true;
+  try{
+    const {error}=await sb.from('reservas').update({estado:status}).eq('id',r.id);
+    if(error) throw error;
+    r.estado=status;
+    const orig=allData.find(a=>a.id===r.id);if(orig)orig.estado=status;
+    if(status==='Confirmado'&&r.email)enviarEmail(idx);
+    renderStats();renderDashboard();renderTable();renderQuartos();renderHospedes();
+    r._upd=false;closeModal();
+    showToast('Reserva '+(r.codigo||r.id)+' — '+status,status==='Confirmado'?'ok':'err');
+  }catch(e){showToast('Erro ao actualizar.','err');r._upd=false;}
+}
+
+// ── Apagar ──
+function pedirApagar(id,idx){
+  pendingDelId=id;
+  const r=filteredData[idx]||allData.find(a=>a.id===id);
+  document.getElementById('delMsg').textContent=`Vai apagar a reserva ${r?(r.codigo||id):id}${r?' de '+r.nome:''}. Esta acção é permanente e não pode ser desfeita.`;
+  closeModal();
+  document.getElementById('modalDel').classList.add('open');
+}
+function fecharDel(){document.getElementById('modalDel').classList.remove('open');pendingDelId=null;}
+async function confirmarApagar(){
+  if(!pendingDelId)return;
+  const id=pendingDelId;fecharDel();
+  showToast('A apagar...','');
+  try{
+    const {error}=await sb.from('reservas').delete().eq('id',id);
+    if(error) throw error;
+    allData=allData.filter(r=>r.id!==id);
+    filteredData=filteredData.filter(r=>r.id!==id);
+    renderStats();renderDashboard();renderTable();renderQuartos();renderHospedes();
+    showToast('Reserva apagada com sucesso.','ok');
+  }catch(e){
+    showToast('Erro de ligação. A reserva não foi apagada.','err');
+  }
+}
+
+// ── Nova reserva ──
+function calcPreco(){
+  const tipo=document.getElementById('nf_tipo').value;
+  const ci=document.getElementById('nf_ci').value;
+  const co=document.getElementById('nf_co').value;
+  const nqRaw=document.getElementById('nf_quartos').value;
+  const nq=nqRaw.includes('3 ou mais')?3:(parseInt(nqRaw.replace(/\D/g,''))||1);
+  const pUnit=precoQuarto(tipo);
+  let totalEst=0;
+  if(ci&&co&&pUnit){
+    const ciD=new Date(ci),coD=new Date(co);
+    const n=Math.max(0,Math.round((coD-ciD)/(1000*60*60*24)));
+    totalEst=pUnit*n*nq;
+  }
+  let previewEl=document.getElementById('nf_preco_est');
+  if(!previewEl){
+    const sec=document.querySelectorAll('#modalNova .modal-section')[1];
+    if(sec){previewEl=document.createElement('div');previewEl.id='nf_preco_est';previewEl.style.cssText='font-size:0.75rem;color:var(--czc);margin-top:8px;';sec.insertBefore(previewEl,sec.querySelector('.modal-actions')||sec.firstChild);}
+  }
+  if(previewEl) previewEl.textContent=totalEst>0?'Estimativa: '+totalEst.toLocaleString('pt-PT')+' Kz':'';
+}
+function abrirNovaReserva(){
+  const today=new Date().toISOString().split('T')[0];
+  ['nf_nome','nf_tel','nf_email','nf_obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('nf_ci').min=today;document.getElementById('nf_ci').value='';
+  document.getElementById('nf_co').min=today;document.getElementById('nf_co').value='';
+  document.getElementById('nf_pag_estado').value='Não pago';
+  document.getElementById('nf_pag_valor').value='';
+  document.getElementById('nf_pag_notas').value='';
+  document.getElementById('nf_tipo').selectedIndex=0;
+  document.getElementById('nf_quartos').selectedIndex=0;
+  document.getElementById('nf_pessoas').selectedIndex=0;
+  document.getElementById('nf_estado').selectedIndex=0;
+  document.getElementById('nfErr').style.display='none';
+  document.getElementById('nfBtn').disabled=false;document.getElementById('nfBtn').textContent='💾 Guardar Reserva';
+  document.getElementById('modalNova').classList.add('open');
+  calcPreco();
+}
+function fecharNova(){document.getElementById('modalNova').classList.remove('open');}
+async function guardarNova(){
+  const nome=document.getElementById('nf_nome').value.trim();
+  const tel=document.getElementById('nf_tel').value.trim();
+  const email=document.getElementById('nf_email').value.trim();
+  const tipo=document.getElementById('nf_tipo').value;
+  const quartos=document.getElementById('nf_quartos').value;
+  const pessoas=document.getElementById('nf_pessoas').value;
+  const ci=document.getElementById('nf_ci').value||'—';
+  const co=document.getElementById('nf_co').value||'—';
+  const obs=document.getElementById('nf_obs').value.trim()||'—';
+  const estado=document.getElementById('nf_estado').value;
+  const errEl=document.getElementById('nfErr');errEl.style.display='none';
+  if(nome.length<2){errEl.textContent='Nome obrigatório (mínimo 2 caracteres).';errEl.style.display='block';return;}
+  if(!tel){errEl.textContent='Telefone obrigatório.';errEl.style.display='block';return;}
+  if(ci!=='—'&&co!=='—'&&co<=ci){errEl.textContent='A data de saída deve ser posterior à de entrada.';errEl.style.display='block';return;}
+  const btn=document.getElementById('nfBtn');btn.disabled=true;btn.textContent='A guardar...';
+  const dados={nome,telefone:tel,email:email||'—',tipo,quartos,pessoas,
+    checkin:ci!=='—'?ci:null,checkout:co!=='—'?co:null,observacoes:obs,estado};
+  try{
+    const {data,error}=await sb.from('reservas').insert(dados).select().single();
+    if(error) throw error;
+    allData.unshift(data);
+    filteredData=[...allData];
+    renderStats();renderDashboard();renderTable();renderQuartos();renderHospedes();
+    fecharNova();showToast('Reserva criada com sucesso! Código: '+(data.codigo||'—'),'ok');
+  }catch(e){
+    errEl.textContent='Erro ao guardar. Verifique a ligação.';errEl.style.display='block';
+    btn.disabled=false;btn.textContent='💾 Guardar Reserva';
+  }
+}
+
+// ── Export ──
+function exportCSV(){
+  if(!filteredData.length){showToast('Sem dados para exportar.');return;}
+  const h=['Código','Nome','Email','Telefone','Tipo','Check-in','Check-out','Pessoas','Quartos','Estado','Data','Observações'];
+  const rows=filteredData.map(r=>[r.codigo||r.id,r.nome,r.email,r.telefone,r.tipo,r.checkin,r.checkout,r.pessoas,r.quartos,r.estado||'Pendente',fmtDataHora(r.criado_em),r.observacoes].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`));
+  const csv=[h.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download=`reservas_reconecta_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();showToast('CSV exportado!','ok');
+}
+
+// ── Password ──
+setDate();
+verificarSessao();
+</script>
+<div id="printArea" class="print-only"></div>
+</body>
+</html>
