@@ -624,7 +624,7 @@ async function carregarAvisos(){
             ? `${a.data_inicio?fmtDataCurta(a.data_inicio):'—'} a ${a.data_fim?fmtDataCurta(a.data_fim):'—'}`
             : '';
           return `<div class="nov-card">
-            ${a.imagem_url?`<img class="nov-card-img" src="${a.imagem_url}" alt="${(a.titulo||'').replace(/"/g,'')}" loading="lazy">`:''}
+            ${a.imagem_url?`<div class="nov-card-imgwrap"><img class="nov-card-img" src="${a.imagem_url}" alt="${(a.titulo||'').replace(/"/g,'')}" loading="lazy"></div>`:''}
             <div class="nov-card-body">
               <div class="nov-card-title">${a.titulo||''}</div>
               <div class="nov-card-desc">${a.descricao||''}</div>
