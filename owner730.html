@@ -598,7 +598,8 @@ td{padding:13px 16px;vertical-align:middle;line-height:1.5}
         <div class="ff full"><label>Descrição</label><textarea id="av_descricao" placeholder="Detalhes do evento, promoção, quarto para alugar, etc."></textarea></div>
         <div class="ff full"><label>Imagem (opcional)</label>
           <input type="file" id="av_imagem" accept="image/*" onchange="previewAvisoImg()">
-          <img id="av_imagem_preview" style="display:none;margin-top:10px;max-width:220px;border-radius:9px">
+          <span style="font-size:.68rem;color:var(--cz);display:block;margin-top:5px">A imagem é recortada e optimizada automaticamente para o formato dos cartões (16:10).</span>
+          <img id="av_imagem_preview" style="display:none;margin-top:10px;max-width:220px;border-radius:9px;aspect-ratio:16/10;object-fit:cover">
         </div>
         <div class="ff"><label>Início (opcional)</label><input type="date" id="av_data_inicio"></div>
         <div class="ff"><label>Fim (opcional)</label><input type="date" id="av_data_fim"></div>
@@ -1365,16 +1366,51 @@ function editarAviso(id){
   document.getElementById('modalAviso').classList.add('open');
 }
 function fecharAviso(){document.getElementById('modalAviso').classList.remove('open');}
-function previewAvisoImg(){
+// ── Redimensionar/cortar imagem no browser antes de enviar ──
+// Garante que toda a imagem de aviso fica no formato 16:10 (o mesmo dos
+// cartões "Novidades"), com boa qualidade e ficheiro leve — sem o admin
+// precisar de editar a foto antes de a carregar.
+function redimensionarImagem(file, larguraAlvo=1200, alturaAlvo=750, qualidade=0.85){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      const racioAlvo=larguraAlvo/alturaAlvo;
+      const racioImg=img.width/img.height;
+      let sx,sy,sw,sh;
+      if(racioImg>racioAlvo){ sh=img.height; sw=sh*racioAlvo; sx=(img.width-sw)/2; sy=0; }
+      else{ sw=img.width; sh=sw/racioAlvo; sx=0; sy=(img.height-sh)/2; }
+      const canvas=document.createElement('canvas');
+      canvas.width=larguraAlvo; canvas.height=alturaAlvo;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img, sx,sy,sw,sh, 0,0, larguraAlvo,alturaAlvo);
+      canvas.toBlob(blob=>{
+        if(!blob){ reject(new Error('Falha ao processar imagem.')); return; }
+        resolve(new File([blob], file.name.replace(/\.[^.]+$/,'')+'.jpg', {type:'image/jpeg'}));
+      }, 'image/jpeg', qualidade);
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error('Não foi possível ler a imagem.')); };
+    img.src=url;
+  });
+}
+async function previewAvisoImg(){
   const inp=document.getElementById('av_imagem');
   const prev=document.getElementById('av_imagem_preview');
   const f=inp.files[0];
   if(!f){ avisoImgFile=null; return; }
-  if(f.size>4*1024*1024){ showToast('Imagem demasiado grande (máx. 4MB).','err'); inp.value=''; return; }
-  avisoImgFile=f;
-  const reader=new FileReader();
-  reader.onload=e=>{ prev.src=e.target.result; prev.style.display='block'; };
-  reader.readAsDataURL(f);
+  if(f.size>8*1024*1024){ showToast('Imagem demasiado grande (máx. 8MB).','err'); inp.value=''; return; }
+  try{
+    prev.style.opacity='.4';
+    const recortada=await redimensionarImagem(f);
+    avisoImgFile=recortada;
+    const reader=new FileReader();
+    reader.onload=e=>{ prev.src=e.target.result; prev.style.display='block'; prev.style.opacity='1'; };
+    reader.readAsDataURL(recortada);
+  }catch(e){
+    showToast('Não foi possível processar a imagem.','err');
+    inp.value=''; avisoImgFile=null; prev.style.opacity='1';
+  }
 }
 async function guardarAviso(){
   const titulo=document.getElementById('av_titulo').value.trim();
